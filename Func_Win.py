@@ -248,7 +248,7 @@ class Win:
         else:
             log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
         
-        if write_log == True:
+        if print_log == True:
             print(log_write, end='')
 
         if write_log == True:
