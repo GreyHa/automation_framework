@@ -243,9 +243,12 @@ class AOS:
             print(log_write, end='')
 
         if write_log == True:
-            log_file = open(self.__log_file_path__, "a", encoding="utf-16")
-            log_file.write(f'{log_write}')
-            log_file.close()
+            try:
+                log_file = open(self.__log_file_path__, "a", encoding="utf-16")
+                log_file.write(f'{log_write}')
+                log_file.close()
+            except:
+                print(sys.exc_info())
 
         if str(log_text)[0:5].lower() == 'error':
             raise Exception(f'{self.__error__}')
