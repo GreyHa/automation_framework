@@ -449,6 +449,13 @@ class Web:
             try:
                 if ElementValueType != 'text':
                     GetValue = ElementHandle[Index].get_attribute(ElementValueType)
+                    if not GetValue:
+                        if ElementValueType == 'checked' or ElementValueType == 'selected':
+                            GetValue = ElementHandle[Index].is_selected()
+                        elif ElementValueType == 'displayed':
+                            GetValue = ElementHandle[Index].is_displayed()
+                        elif ElementValueType == 'enabled':
+                            GetValue = ElementHandle[Index].is_enabled()
                 else:
                     GetValue = ElementHandle[Index].text
                 ElementValueList.append(GetValue)
