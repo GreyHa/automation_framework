@@ -494,7 +494,7 @@ class Win:
         #self.screenshot(f'Send_Error')
         self.log(f'Error : Send > {TagetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
 
-    def FindValues(self, Elements=None, Value=None, ValueType=None, retry_count:int=-1):
+    def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, retry_count:int=-1):
         """
             찾은 Element의 구성요소 값을 찾아서 ElementValueList에 갱신
             만약 ElementValueList에 Value값이 존재 한다면 ElementIndex에 갱신
@@ -533,7 +533,12 @@ class Win:
             self.log(f' > {Index}', write_log=self.__class_log__)
             self.ElementIndex = Index
         else:
-            self.ElementIndex = None
+            if not_find_error == True:
+                self.log(f'ElementValueList : {ElementValueList}', write_log=self.__class_log__)
+                self.log(f'ElementValue : "{ElementValue}"', write_log=self.__class_log__)
+                self.log(f'Error : FindValues > not find value', write_log=self.__class_log__)
+            else:
+                self.ElementIndex = None
         
         if ElementValue == None:
             if ElementValueList:
