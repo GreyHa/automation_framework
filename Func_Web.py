@@ -739,10 +739,24 @@ class Web:
         except:
             self.log(f'Error : highlight\n{sys.exc_info()}', write_log=self.__class_log__)
     
-    def screenshot(self,file_name):
-        if not(os.path.isdir(self.__screenshot_path__)):
-            os.makedirs(os.path.join(self.__screenshot_path__))
-        self.driver.save_screenshot(f'{self.__screenshot_path__}/{self.now_time("file")}_{file_name}.png')
+    def screenshot(self,file_name=None, screenshot_path=None):
+
+        if screenshot_path:
+            __screenshot_path__ = screenshot_path
+        else:
+            __screenshot_path__ = self.__screenshot_path__
+
+        if not(os.path.isdir(__screenshot_path__)):
+            os.makedirs(os.path.join(__screenshot_path__))
+
+        if file_name:
+            file_path = f'{__screenshot_path__}/{self.now_time("file")}_{file_name}.png'
+        else:
+            file_path = f'{__screenshot_path__}/{self.now_time("file")}.png'
+
+        self.driver.save_screenshot(file_path)
+
+        return file_path
 
 
     def action(self):
