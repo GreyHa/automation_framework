@@ -74,9 +74,9 @@ def check_img(img_path, img_path2, accuracy:int=0.3):
     except:
         return 0
 
-def check_img_screen(driver, check_img_path, accuracy=0.3, path_count=1):
+def check_img_screen(driver, check_img_path, accuracy=0.3, pass_count=1):
     screenshot_path = driver.screenshot()
     good_count = check_img(img_path=screenshot_path,img_path2=check_img_path, accuracy=accuracy)
 
-    if path_count > good_count:
-        raise Exception(f'not find img : path_count: {path_count} > good_count: {good_count}')
+    if pass_count > good_count:
+        raise Exception(f'not find img : pass_count: {pass_count} > good_count: {good_count}')
