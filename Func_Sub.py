@@ -69,14 +69,16 @@ def check_img(img_path, img_path2, accuracy:int=0.3):
             #knn_image = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
             #plt.imshow(knn_image)
             #plt.show()
-
+        print(f'check_img > result: {len(good)}')
         return len(good)
     except:
         return 0
 
 def check_img_screen(driver, check_img_path, accuracy=0.3, pass_count=1):
-    screenshot_path = driver.screenshot()
+    screenshot_path = driver.screenshot(file_name='check_img_screen')
     good_count = check_img(img_path=screenshot_path,img_path2=check_img_path, accuracy=accuracy)
 
     if pass_count > good_count:
         raise Exception(f'not find img : pass_count: {pass_count} > good_count: {good_count}')
+
+    return screenshot_path
