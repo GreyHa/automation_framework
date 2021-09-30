@@ -4,7 +4,8 @@ import hashlib
 import pyautogui
 import time, os
 from cv2 import cv2
-#import numpy as np
+from pathlib import Path
+import numpy as np
 #from matplotlib import pyplot as plt
 
 def get_hash(file_path, func_type='md5'):
@@ -47,32 +48,33 @@ def check_file_hash(check_hash, taget_path, hash_type='md5'):
         raise Exception(f'check_hash: "{check_hash}" != taget_hash: "{taget_hash}"')
 
 def check_img(img_path, img_path2, accuracy:int=0.3):
-    img1 = cv2.imread(img_path,0)
-    img2 = cv2.imread(img_path2,0)
-    try:
-        sift = cv2.xfeatures2d.SIFT_create()
-        kp1, des1 = sift.detectAndCompute(img1,None)
-        kp2, des2 = sift.detectAndCompute(img2,None)
-        bf = cv2.BFMatcher()
-        matches = bf.knnMatch(des1,des2, k=2)
-        good = []
-        for m,n in matches:
-            if m.distance < accuracy*n.distance:
-                good.append([m])
+    img_array1 = np.fromfile(Path(img_path), np.uint8)
+    img_array2 = np.fromfile(Path(img_path2), np.uint8)
 
-        if kp1 == kp2:
-            pass
-            #img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,None,flags=2)
-            #plt.imshow(img3),plt.show()
-            #print(good)
-            #print(len(good))
-            #knn_image = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
-            #plt.imshow(knn_image)
-            #plt.show()
-        print(f'check_img > result: {len(good)}')
-        return len(good)
-    except:
-        return 0
+    img1 = cv2.imdecode(img_array1,0)
+    img2 = cv2.imdecode(img_array2,0)
+
+    sift = cv2.xfeatures2d.SIFT_create()
+    kp1, des1 = sift.detectAndCompute(img1,None)
+    kp2, des2 = sift.detectAndCompute(img2,None)
+    bf = cv2.BFMatcher()
+    matches = bf.knnMatch(des1,des2, k=2)
+    good = []
+    for m,n in matches:
+        if m.distance < accuracy*n.distance:
+            good.append([m])
+
+    if kp1 == kp2:
+        pass
+        #img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,None,flags=2)
+        #plt.imshow(img3),plt.show()
+        #print(good)
+        #print(len(good))
+        #knn_image = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
+        #plt.imshow(knn_image)
+        #plt.show()
+    print(f'check_img > result: {len(good)}')
+    return len(good)
 
 def check_img_screen(driver, check_img_path, accuracy=0.3, pass_count=1):
     screenshot_path = driver.screenshot(file_name='check_img_screen')

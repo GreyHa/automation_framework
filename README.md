@@ -18,3 +18,9 @@ mac
 
 # AOS adb 기능을 사용하려면 옵션 켜야함
 appium --allow-insecure=adb_shell
+
+
+# Sub 이미지 인식 등 서브 모듈
+pip install pyautogui
+pip install opencv-python
+pip install opencv-contrib
