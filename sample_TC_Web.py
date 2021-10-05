@@ -5,16 +5,28 @@ import unittest # https://docs.python.org/ko/3/library/unittest.html
 
 from Func_Web import Web
 import sample_Element as element
+import chromedriver_autoinstaller
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium import webdriver
+
+chromedriver_path = chromedriver_autoinstaller.install()
 
 __platform__ = 'Web'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
 __time__ = time.strftime(f'%Y%m%d_%H%M%S',time.localtime(time.time()))
 
+chrome_options = webdriver.ChromeOptions()
+desired_capabilities = DesiredCapabilities.CHROME
+desired_capabilities['goog:loggingPrefs'] = {"browser": "ALL", 'performance': 'ALL'}
+#{"driver": "ALL", "browser": "ALL", 'performance': 'ALL'} > browser : 콘솔 로그 / performance : Network
+
 driver_info = {}
 driver_info['ip'] = None
 driver_info['port'] = None
-driver_info['executable_path'] = 'chromedriver path setting'
+driver_info['executable_path'] = chromedriver_path
 driver_info['location'] = None
+driver_info['chrome_options'] = chrome_options
+driver_info['desired_capabilities'] = desired_capabilities
 
 class_option = {}
 class_option['element_highlight'] = False

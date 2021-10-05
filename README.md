@@ -6,6 +6,12 @@ pip install selenium
 
 # web 모듈은 현재 크롬을 고정으로 사용
 https://chromedriver.chromium.org/downloads
+https://pypi.org/project/chromedriver-autoinstaller/
+
+pip install chromedriver-autoinstaller
+
+import chromedriver_autoinstaller
+chromedriver_path = chromedriver_autoinstaller.install()
 
 # 사용중인 크롬을 디버그 하려면 아래 방법으로 실행해서 연결 필요
 windows

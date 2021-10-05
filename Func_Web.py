@@ -39,7 +39,9 @@ class Web:
                     'height': window size or None,
                     'x': window position or None,
                     'y':window position or None
-                }
+                },
+                'chrome_options' : chrome_options,
+                'desired_capabilities' : desired_capabilities
             }
 
             Delay =
@@ -76,7 +78,19 @@ class Web:
             self.__driver_location__ = DriverInfo['location']
         else:
             self.__driver_location__ = None
-        
+
+        if 'chrome_options' in DriverInfo.keys():
+            chrome_options = DriverInfo['chrome_options']
+        else:
+            chrome_options = webdriver.ChromeOptions()
+            #chrome_options.add_experimental_option('prefs',{"profile.default_content_setting_values.notifications" : 2})
+
+        if 'desired_capabilities' in DriverInfo.keys():
+            desired_capabilities = DriverInfo['desired_capabilities']
+        else:
+            desired_capabilities = DesiredCapabilities.CHROME
+            desired_capabilities['goog:loggingPrefs'] = {"browser": "ALL", 'performance': 'ALL'}
+
         if 'screenshot_path' in ClassOption.keys():
             self.__screenshot_path__ = ClassOption['screenshot_path']
         else:
@@ -133,16 +147,11 @@ class Web:
         self.path_create(os.path.dirname(self.__screenshot_path__))
         #os.system(f'start cmd /c python -m http.server --bind {Config.WebserverIP} {Config.WebserverPort} --directory {Config.BASE_DIR}')
         #https://chromedriver.chromium.org/capabilities
-        ChromeOption = webdriver.ChromeOptions()
+
         if self.__driver_ip__ != None:
-            ChromeOption.add_experimental_option("debuggerAddress", f"{self.__driver_ip__}:{self.__driver_port__}")
-        else:
-            ChromeOption.add_experimental_option('prefs',{"profile.default_content_setting_values.notifications" : 2})
-        
-        caps = DesiredCapabilities.CHROME
-        caps['goog:loggingPrefs'] = {"driver": "ALL", "browser": "ALL", 'performance': 'ALL'}# browser : 콘솔 로그 / performance : Network
-        
-        self.driver = webdriver.Chrome(executable_path=self.__driver_path__, chrome_options=ChromeOption, desired_capabilities=caps)# service_args=["--verbose"] goog:loggingPrefs "--log-path=/qc1.txt"
+            chrome_options.add_experimental_option("debuggerAddress", f"{self.__driver_ip__}:{self.__driver_port__}")
+
+        self.driver = webdriver.Chrome(executable_path=self.__driver_path__, chrome_options=chrome_options, desired_capabilities=desired_capabilities)# service_args=["--verbose"] goog:loggingPrefs "--log-path=/qc1.txt"
         
         self.capabilities = self.driver.capabilities
         debuggerAddress = self.capabilities['goog:chromeOptions']['debuggerAddress'].split(':')
