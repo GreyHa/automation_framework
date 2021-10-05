@@ -29,4 +29,4 @@ appium --allow-insecure=adb_shell
 # Sub 이미지 인식 등 서브 모듈
 pip install pyautogui
 pip install opencv-python
-pip install opencv-contrib
+pip install opencv-contrib-python
