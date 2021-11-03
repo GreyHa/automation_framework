@@ -46,7 +46,8 @@ class AOS:
             }
         '''
         self.__device_info__ = DeviceInfo
-        
+        self.__class_option__ = ClassOption
+
         if 'ip' in AppiumServerInfo.keys():
             self.__appium_ip__ = AppiumServerInfo['ip']
         else:

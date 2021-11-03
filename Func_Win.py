@@ -41,6 +41,8 @@ class Win:
                 'class_log' = True, class in func log write
             }
         '''
+        self.__driver_info__ = DriverInfo
+        self.__class_option__ = ClassOption
 
         if 'ip' in DriverInfo.keys():
             self.__driver_ip__ = DriverInfo['ip']

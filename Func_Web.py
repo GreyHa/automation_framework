@@ -62,6 +62,9 @@ class Web:
 
             WinDriver = None or Win modul class
         '''
+        self.__driver_info__ = DriverInfo
+        self.__class_option__ = ClassOption
+
         self.__driver_path__ = DriverInfo['executable_path']
 
         if 'ip' in DriverInfo.keys():
