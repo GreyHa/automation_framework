@@ -685,7 +685,7 @@ class Web:
 
         self.WaitElement(SoureceElement,Index=SoureceIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
-            Sourece_ElementCheck = self.ElementHandle[SoureceIndex]
+            Sourece_ElementCheck = self.ElementHandle[self.ElementIndex]
             self.WaitElement(TagetElement,Index=TagetIndex, retry_count=retry_count)
             if len(self.ElementHandle) > 0:
                 Taget_ElementCheck = self.ElementHandle[TagetIndex]
