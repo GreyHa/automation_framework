@@ -842,7 +842,7 @@ class Win:
         else:
             raise Exception(f'compare_type: "{compare_type}" not in compare_list: {compare_list}')
 
-    def func_log(self, log_type:int, log_text:str):
+    def func_log(self, log_type:int, log_text:str=''):
         '''
             log_type : 0 > by pass
             log_tpye : 1 > start
