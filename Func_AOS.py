@@ -902,7 +902,7 @@ class AOS:
         else:
             text = f'[{func_name}] {log_text}'
 
-        return text
+        self.log(text,write_log=self.__class_log__)
 
 
     def compare_log(self, target1, target2, func_type:str='==', pass_type=0, fail_type=-1):
@@ -918,7 +918,7 @@ class AOS:
             return log_type
         '''
         log_type, log_text = self.compare(target1,target2,func_type=func_type, pass_type=pass_type, fail_type=fail_type)
-        
-        self.log(self.func_log((log_type,log_text)),write_log=self.__class_log__)
-        
+
+        self.func_log((log_type,log_text))
+
         return log_type
