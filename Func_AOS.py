@@ -857,7 +857,7 @@ class AOS:
         else:
             raise Exception(f'compare_type: "{compare_type}" not in compare_list: {compare_list}')
 
-    def func_log(self, result:tuple):
+    def func_log(self, log_type:int, log_text:str):
         '''
             log_type : 0 > by pass
             log_tpye : 1 > start
@@ -868,7 +868,6 @@ class AOS:
             log_tpye : -1 > Error
         '''
         func_name = inspect.stack()[1][3]
-        log_type, log_text = result
 
         if log_type == 1:
             if log_text:
@@ -905,7 +904,7 @@ class AOS:
         self.log(text,write_log=self.__class_log__)
 
 
-    def compare_log(self, target1, target2, func_type:str='==', pass_type=0, fail_type=-1):
+    def compare_log(self, target1, target2, compare_type:str='==', pass_type=0, fail_type=-1):
         '''
             pass_type, fail_type
             log_type : 0 > by pass < pass_type
@@ -917,8 +916,8 @@ class AOS:
 
             return log_type
         '''
-        log_type, log_text = self.compare(target1,target2,func_type=func_type, pass_type=pass_type, fail_type=fail_type)
+        log_type, log_text = self.compare(target1,target2,compare_type=compare_type,pass_type=pass_type,fail_type=fail_type)
 
-        self.func_log((log_type,log_text))
+        self.func_log(log_type,log_text)
 
         return log_type
