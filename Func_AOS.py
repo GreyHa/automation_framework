@@ -2,7 +2,8 @@
 #!/usr/bin/env python3
 #https://selenium-python.readthedocs.io/api.html#selenium.webdriver.common.touch_actions.TouchActions.scroll
 
-import time, os, base64, sys
+from asyncore import write
+import time, os, base64, sys, inspect
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from appium.webdriver.common.touch_action import TouchAction
@@ -224,12 +225,12 @@ class AOS:
             return time.strftime(f'%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
     def find_key_in_dict_list(self, dict_list:list, key_name, key_value):
-        for taget_dict in dict_list:
-            key_list = taget_dict.keys()
+        for target_dict in dict_list:
+            key_list = target_dict.keys()
             if key_name in key_list:
-                find_key_value = taget_dict[key_name]
+                find_key_value = target_dict[key_name]
                 if key_value == find_key_value:
-                    return taget_dict
+                    return target_dict
         return None
 
     def path_create(self, path):
@@ -239,7 +240,7 @@ class AOS:
             except:
                 print(sys.exc_info())
 
-    def log(self, log_text, write_log=True, print_log:bool=True):
+    def log(self, log_text, write_log:bool=True, print_log:bool=True):
         if self.__warning_collection__ == True:
             if str(log_text)[0:7].lower() == 'warning':
                 self.warning_list.append(log_text)
@@ -272,41 +273,41 @@ class AOS:
             
             Elements = {
                 'Type' : 'id',
-                'Taget' : 'element'
+                'Target' : 'element'
             }
 
         """
         self.__ElementHandle__(Elements)
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
             
-        if 'list' in str(type(TagetElement)):
+        if 'list' in str(type(TargetElement)):
             #이미 완성된 WebElement 집합
             self.ElementHandle = Elements
             return self
 
-        elif 'dict' in str(type(TagetElement)):
-            if 'Type' in TagetElement:
-                ElementType = TagetElement['Type']
+        elif 'dict' in str(type(TargetElement)):
+            if 'Type' in TargetElement:
+                ElementType = TargetElement['Type']
             else:
                 ElementType = self.__element_type__
             
-            if 'Taget' in TagetElement:
-                ElementTaget = TagetElement['Taget']
+            if 'Target' in TargetElement:
+                ElementTarget = TargetElement['Target']
             else:
-                self.log(f'Error : FindElements > Element Taget > {TagetElement}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Target > {TargetElement}', write_log=self.__class_log__)
 
             try:
-                Result = self.driver.find_elements(ElementType, ElementTaget)
+                Result = self.driver.find_elements(ElementType, ElementTarget)
             except:
-                self.log(f'Error : FindElements > Element Type : {ElementType} {TagetElement} [{str(type(TagetElement))}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Type : {ElementType} {TargetElement} [{str(type(TargetElement))}]\n{sys.exc_info()}', write_log=self.__class_log__)
 
             if len(Result) == 0:
-                self.log(f'FindElements > Not Find >{TagetElement}', write_log=self.__class_log__)
+                self.log(f'FindElements > Not Find >{TargetElement}', write_log=self.__class_log__)
                 Result = []
             self.ElementHandle = Result
             return self
         else:
-            self.log(f'Error : FindElements > Element Type : {TagetElement} [{str(type(TagetElement))}]', write_log=self.__class_log__)
+            self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]', write_log=self.__class_log__)
 
     def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, retry_count:int=-1):
         """
@@ -319,9 +320,9 @@ class AOS:
         self.__ElementHandle__(Elements)
         ElementValue = self.ElementValue
         ElementValueType = self.ElementValueType
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,none_error=True, retry_count=retry_count)
+        self.WaitElement(TargetElement,none_error=True, retry_count=retry_count)
         ElementValueList = []
         ElementHandle = self.ElementHandle
         for Index in range(len(ElementHandle)):
@@ -334,11 +335,11 @@ class AOS:
                     GetValue = False
                 else:
                     GetValue = get_value
-                self.log(f'FindValues > {TagetElement}[{Index}] > "{GetValue}"', write_log=self.__class_log__)
+                self.log(f'FindValues > {TargetElement}[{Index}] > "{GetValue}"', write_log=self.__class_log__)
                 ElementValueList.append(GetValue)
             except:
-                self.log(f'FindValues Error > {TagetElement}[{Index}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'FindValues > {TagetElement} > {ElementValueList}', write_log=self.__class_log__)
+                self.log(f'FindValues Error > {TargetElement}[{Index}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'FindValues > {TargetElement} > {ElementValueList}', write_log=self.__class_log__)
         self.ElementValueList = ElementValueList
         if ElementValue in ElementValueList:
             Index = ElementValueList.index(ElementValue)
@@ -373,8 +374,8 @@ class AOS:
         self.__ElementIndex__(Elements,Index)
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
-        self.log(f'WaitElement [none_element:{none_element}] > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        TargetElement = self.ElementHandle
+        self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
 
         if retry_count > 0:
             retry = retry_count
@@ -383,7 +384,7 @@ class AOS:
 
         for _ in range(retry):
             time.sleep(self.__after__)
-            self.FindElements(TagetElement)
+            self.FindElements(TargetElement)
             
             if len(self.ElementHandle) > ElementIndex:
                 if enabled != None:
@@ -412,9 +413,9 @@ class AOS:
                     return self
 
         if none_error == False:
-            self.log(f'Error : WaitElement [none_element:{none_element}] > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+            self.log(f'Error : WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
         else:
-            self.log(f'WaitElement [none_element:{none_element}] > {TagetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
+            self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
             return self
 
     def Click(self, Elements=None, Index=None, offset={'x':None,'y':None}, retry_count:int=-1):
@@ -427,7 +428,7 @@ class AOS:
         self.__ElementIndex__(Elements,Index)
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
         if 'x' in offset.keys():
             offset_x = offset['x']
         else:
@@ -439,7 +440,7 @@ class AOS:
             offset_y = None
         
 
-        self.WaitElement(TagetElement,Index=ElementIndex, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             try:
@@ -469,11 +470,11 @@ class AOS:
                     action.perform()
                 else:
                     ElementHandle.click()
-                self.log(f'Click > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                self.log(f'Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
                 return self
             except:
-                self.log(f'Click Error > {TagetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Click > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                self.log(f'Click Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'Error : Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
 
     def Send(self, Elements=None, Value=None, Index=None, clear:bool=True, enter:bool=False, hide_keyboard=True, retry_count:int=-1):
         """
@@ -488,9 +489,9 @@ class AOS:
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
         ElementValue = self.ElementValue
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,Index=Index, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=Index, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             try:
@@ -506,7 +507,7 @@ class AOS:
                         action = self.action()
                         action.send_keys(ElementValue).perform()
 
-                    self.log(f'Send > {TagetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
+                    self.log(f'Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
 
                 if enter == True:
                     self.driver.press_keycode(66)
@@ -516,8 +517,8 @@ class AOS:
                     self.driver.hide_keyboard()
                 return self
             except:
-                self.log(f'Send Error > {TagetElement}[{ElementIndex}] > "{ElementValue}"\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Send > {TagetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
+                self.log(f'Send Error > {TargetElement}[{ElementIndex}] > "{ElementValue}"\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'Error : Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
 
     def GetAttribute(self, Elements=None, attribute_list=[
             'text','displayed','enabled','checked','selected','package',
@@ -527,10 +528,10 @@ class AOS:
 
         """
         self.__ElementHandle__(Elements)
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
         
 
-        self.WaitElement(TagetElement,none_error=True, retry_count=retry_count)
+        self.WaitElement(TargetElement,none_error=True, retry_count=retry_count)
         ElementAttribute = []
         ElementHandle = self.ElementHandle
         for Index in range(len(ElementHandle)):       
@@ -552,21 +553,21 @@ class AOS:
                         if attribute == 'textContent' or attribute == 'text':
                             get_attribute[attribute] = ElementHandle[Index].text
                 except:
-                    self.log(f'GetAttribute Error > {TagetElement}[{Index}][{attribute}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                    self.log(f'GetAttribute Error > {TargetElement}[{Index}][{attribute}]\n{sys.exc_info()}', write_log=self.__class_log__)
             time.sleep(0.1)
             ElementAttribute.append(get_attribute)
     
-        self.log(f'GetAttribute > {TagetElement} > {ElementAttribute}', write_log=self.__class_log__)
+        self.log(f'GetAttribute > {TargetElement} > {ElementAttribute}', write_log=self.__class_log__)
         self.ElementAttribute = ElementAttribute
         return self
 
-    def Slide(self, TagetElements=None, TagetIndex=None, offset:dict={'x':0,'y':0}, retry_count:int=-1):
+    def Slide(self, TargetElements=None, TargetIndex=None, offset:dict={'x':0,'y':0}, retry_count:int=-1):
         """
             ElementHandle의 ElementIndex번째 Element를
-            TagetElements의 TagetIndex번째 위치로 슬라이드
-            ElementHandle은 TagetElements로 갱신됨
+            TargetElements의 TargetIndex번째 위치로 슬라이드
+            ElementHandle은 TargetElements로 갱신됨
             
-            만약 TagetElements 값을 입력 하지 않으면 ElementHandle 위치 기점으로 offset 위치 까지 슬라이드
+            만약 TargetElements 값을 입력 하지 않으면 ElementHandle 위치 기점으로 offset 위치 까지 슬라이드
         """
         offset_x = offset['x']
         offset_y = offset['y']
@@ -577,40 +578,40 @@ class AOS:
         else:
             Soureceindex = 0
 
-        if TagetElements:
-            self.__ElementHandle__(TagetElements)
-            TagetElement = self.ElementHandle
+        if TargetElements:
+            self.__ElementHandle__(TargetElements)
+            TargetElement = self.ElementHandle
             self.ElementIndex = None
-            self.__ElementIndex__(TagetElements,TagetIndex)
-            Tagetindex = self.ElementIndex
+            self.__ElementIndex__(TargetElements,TargetIndex)
+            Targetindex = self.ElementIndex
         else:
-            TagetElement = SoureceElement
-            Tagetindex = Soureceindex
+            TargetElement = SoureceElement
+            Targetindex = Soureceindex
 
         self.WaitElement(SoureceElement,Index=Soureceindex, retry_count=retry_count)
         #self.screenshot(f'Scrolle')
         if len(self.ElementHandle) > 0:
             SoureceElementHandle = self.ElementHandle[Soureceindex]
-            self.WaitElement(TagetElement,Index=Tagetindex, retry_count=retry_count)
+            self.WaitElement(TargetElement,Index=Targetindex, retry_count=retry_count)
             if len(self.ElementHandle) > 0:
-                TagetElementHandle = self.ElementHandle[Tagetindex]
+                TargetElementHandle = self.ElementHandle[Targetindex]
                 try:
 
                     action = self.touchaction()
                     action.press(SoureceElementHandle)
                     action.wait(500)
-                    action.move_to(TagetElementHandle,x=offset_x,y=offset_y)
+                    action.move_to(TargetElementHandle,x=offset_x,y=offset_y)
                     action.release()
                     action.perform()
-                    self.log(f'Slide > {TagetElement}[{Tagetindex}] x:{offset_x},y:{offset_y}', write_log=self.__class_log__)
+                    self.log(f'Slide > {TargetElement}[{Targetindex}] x:{offset_x},y:{offset_y}', write_log=self.__class_log__)
                     time.sleep(self.__after__)
                     #self.screenshot(f'Scrolle')
                     return self
                 except:
-                    self.log(f'Slide Error > {TagetElement}[{Tagetindex}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                    self.log(f'Slide Error > {TargetElement}[{Targetindex}]\n{sys.exc_info()}', write_log=self.__class_log__)
                     time.sleep(self.__after__)
         #self.screenshot(f'Scrolle_Error')
-        self.log(f'Error : Slide > {TagetElement}[{Tagetindex}]', write_log=self.__class_log__)
+        self.log(f'Error : Slide > {TargetElement}[{Targetindex}]', write_log=self.__class_log__)
 
     def LongPress(self, Elements=None, Index=None, offset={'x':None,'y':None}, duration=1, retry_count:int=-1):
         """
@@ -619,7 +620,7 @@ class AOS:
         self.__ElementIndex__(Elements,Index)
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
         if 'x' in offset.keys():
             offset_x = offset['x']
         else:
@@ -630,7 +631,7 @@ class AOS:
         else:
             offset_y = None
         
-        self.WaitElement(TagetElement,Index=ElementIndex, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             if offset_x != None or offset_y != None:
@@ -661,9 +662,9 @@ class AOS:
                 action.long_press(el=ElementHandle, duration=duration*1000)
                 action.release()
                 action.perform()
-            self.log(f'LongPress > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+            self.log(f'LongPress > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
             return self
-        self.log(f'Error : LongPress > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : LongPress > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
 
     def screenshot(self,file_name=None, screenshot_path=None):
 
@@ -822,3 +823,102 @@ class AOS:
 
     def adb_app_start(self, app_id):
         self.adb_shell(command='am start',args=app_id)
+
+    def compare(self, target1, target2, compare_type='==', pass_type=0, fail_type=-1):
+        compare_text = f'target1: "{target1}" {compare_type} "{target2}"'
+        
+        compare_list = ['!=', '==', '>=', '<=', '>', '<', 'in', 'not in']
+        if compare_type in compare_list:
+            if compare_type == '!=' and target1 != target2:
+                return pass_type, compare_text
+
+            elif compare_type == '==' and target1 == target2:
+                return pass_type, compare_text
+
+            elif compare_type == '>=' and target1 >= target2:
+                return pass_type, compare_text
+
+            elif compare_type == '<=' and target1 <= target2:
+                return pass_type, compare_text
+
+            elif compare_type == '>' and target1 > target2:
+                return pass_type, compare_text
+
+            elif compare_type == '<' and target1 < target2:
+                return pass_type, compare_text
+
+            elif compare_type == 'in' and target1 in target2:
+                return pass_type, compare_text
+
+            elif compare_type == 'not in' and target1 not in target2:
+                return pass_type, compare_text
+            else:
+                return fail_type, f'fail > ({compare_text})'
+        else:
+            raise Exception(f'compare_type: "{compare_type}" not in compare_list: {compare_list}')
+
+    def func_log(self, result:tuple):
+        '''
+            log_type : 0 > by pass
+            log_tpye : 1 > start
+            log_tpye : 2 > check
+            log_tpye : 3 > end
+
+            log_tpye : -2 > Warning
+            log_tpye : -1 > Error
+        '''
+        func_name = inspect.stack()[1][3]
+        log_type, log_text = result
+
+        if log_type == 1:
+            if log_text:
+                text = f'[==== {func_name} start > {log_text} ====]'
+            else:
+                text = f'[==== {func_name} start ====]'
+
+        elif log_type == 2:
+            if log_text:
+                text = f'[==== {func_name} check > {log_text} ====]'
+            else:
+                text = f'[==== {func_name} check ====]'
+        
+        elif log_type == 3:
+            if log_text:
+                text = f'[==== {func_name} end > {log_text} ====]'
+            else:
+                text = f'[==== {func_name} end ====]'
+        
+        elif log_type == -2:
+            if log_text:
+                text = f'Warning : {func_name} > {log_text}'
+            else:
+                text = f'Warning : {func_name}'
+
+        elif log_type == -1:
+            if log_text:
+                text = f'Error : {func_name} > {log_text}'
+            else:
+                text = f'Error : {func_name}'
+        else:
+            text = f'[{func_name}] {log_text}'
+
+        return text
+
+
+    def compare_log(self, target1, target2, func_type:str='==', pass_type=0, fail_type=-1):
+        '''
+            pass_type, fail_type
+            log_type : 0 > by pass < pass_type
+            log_tpye : 1 > start
+            log_tpye : 2 > check
+            log_tpye : 3 > end
+            log_tpye : -2 > Warning
+            log_tpye : -1 > Error < fail_type
+
+            return log_type
+        '''
+        log_type, log_text = self.compare(target1,target2,func_type=func_type, pass_type=pass_type, fail_type=fail_type)
+        
+        self.log(self.func_log((log_type,log_text)),write_log=self.__class_log__)
+        
+        return log_type

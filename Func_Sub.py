@@ -42,10 +42,10 @@ def find_img_position(file_path, region=(), confidence:int=0.75, grayscale:bool=
         else:
             time.sleep(wait)
     
-def check_file_hash(check_hash, taget_path, hash_type='md5'):
-    taget_hash = get_hash(file_path=taget_path, func_type=hash_type)
-    if check_hash != taget_hash:
-        raise Exception(f'check_hash: "{check_hash}" != taget_hash: "{taget_hash}"')
+def check_file_hash(check_hash, target_path, hash_type='md5'):
+    target_hash = get_hash(file_path=target_path, func_type=hash_type)
+    if check_hash != target_hash:
+        raise Exception(f'check_hash: "{check_hash}" != target_hash: "{target_hash}"')
 
 def check_img(img_path, img_path2, accuracy:int=0.3):
     img_array1 = np.fromfile(Path(img_path), np.uint8)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python3
-import time, os, sys
+import time, os, sys, inspect
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from appium.webdriver.common.touch_action import TouchAction
@@ -234,12 +234,12 @@ class Win:
             return time.strftime(f'%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
     def find_key_in_dict_list(self, dict_list:list, key_name, key_value):
-        for taget_dict in dict_list:
-            key_list = taget_dict.keys()
+        for target_dict in dict_list:
+            key_list = target_dict.keys()
             if key_name in key_list:
-                find_key_value = taget_dict[key_name]
+                find_key_value = target_dict[key_name]
                 if key_value == find_key_value:
-                    return taget_dict
+                    return target_dict
         return None
 
     def path_create(self, path):
@@ -293,12 +293,12 @@ class Win:
                 else:
                     ElementType = 'xpath'
             
-                if 'Taget' in Elements:
-                    ElementTaget = Elements['Taget']
+                if 'Target' in Elements:
+                    ElementTarget = Elements['Target']
                 else:
                     #self.screenshot(f'FindElements_Error')
-                    self.log(f'Error : Change_handle > Element Taget > {Elements}', write_log=self.__class_log__)
-                get_handle = self.driver.find_element(ElementType,ElementTaget).get_attribute('NativeWindowHandle')
+                    self.log(f'Error : Change_handle > Element Target > {Elements}', write_log=self.__class_log__)
+                get_handle = self.driver.find_element(ElementType,ElementTarget).get_attribute('NativeWindowHandle')
                 handle_hex = hex(int(get_handle))
         else:
             handle_hex = WindowsHandle
@@ -332,38 +332,38 @@ class Win:
             FindElementByXPath	xpath	Any	//Button[0]
         """
         self.__ElementHandle__(Elements)
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
             
-        if 'list' in str(type(TagetElement)):
+        if 'list' in str(type(TargetElement)):
             #이미 완성된 WebElement 집합
             self.ElementHandle = Elements
             return self
 
-        elif 'dict' in str(type(TagetElement)):
-            if 'Type' in TagetElement:
-                ElementType = TagetElement['Type']
+        elif 'dict' in str(type(TargetElement)):
+            if 'Type' in TargetElement:
+                ElementType = TargetElement['Type']
             else:
                 ElementType = self.__element_type__
             
-            if 'Taget' in TagetElement:
-                ElementTaget = TagetElement['Taget']
+            if 'Target' in TargetElement:
+                ElementTarget = TargetElement['Target']
             else:
                 #self.screenshot(f'FindElements_Error')
-                self.log(f'Error : FindElements > Element Taget > {TagetElement}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Target > {TargetElement}', write_log=self.__class_log__)
 
             try:
-                Result = self.driver.find_elements(ElementType, ElementTaget)
+                Result = self.driver.find_elements(ElementType, ElementTarget)
             except:
-                self.log(f'Error : FindElements > Element Type : {TagetElement} [{str(type(TagetElement))}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]\n{sys.exc_info()}', write_log=self.__class_log__)
 
             if len(Result) == 0:
-                self.log(f'FindElements > Not Find >{TagetElement}', write_log=self.__class_log__)
+                self.log(f'FindElements > Not Find >{TargetElement}', write_log=self.__class_log__)
                 Result = []
             self.ElementHandle = Result
             return self
         else:
             #self.screenshot(f'FindElements_Error')
-            self.log(f'Error : FindElements > Element Type : {TagetElement} [{str(type(TagetElement))}]', write_log=self.__class_log__)
+            self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]', write_log=self.__class_log__)
     
 
     def WaitElement(self, Elements=None, Index=None, none_element:bool=False, none_error:bool=False, retry_count:int=-1):
@@ -386,8 +386,8 @@ class Win:
         self.__ElementIndex__(Elements,Index)
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
-        self.log(f'WaitElement [none_element:{none_element}] > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        TargetElement = self.ElementHandle
+        self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
         
         if retry_count > 0:
             retry = retry_count
@@ -396,7 +396,7 @@ class Win:
             
         for _ in range(retry):
             time.sleep(self.__after__)
-            self.FindElements(TagetElement)
+            self.FindElements(TargetElement)
             if len(self.ElementHandle) > ElementIndex:
                 ElementHandle = [self.ElementHandle[ElementIndex]]
             else:
@@ -413,10 +413,10 @@ class Win:
 
         if none_error == False:
             #self.screenshot(f'WaitElement_Error')
-            self.log(f'Error : WaitElement [none_element:{none_element}] > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+            self.log(f'Error : WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
         else:
             #self.screenshot(f'WaitElement_Pass')
-            self.log(f'WaitElement [none_element:{none_element}] > {TagetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
+            self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
             return self
 
     def Click(self, Elements=None, Index=None, control_click:bool=True, retry_count:int=-1):
@@ -426,9 +426,9 @@ class Win:
         self.__ElementIndex__(Elements,Index)
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,Index=ElementIndex, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         #self.screenshot(f'Click')
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
@@ -447,12 +447,12 @@ class Win:
                 else:
                     ElementHandle.click()
                     
-                self.log(f'Click > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                self.log(f'Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
                 return self
             except:
-                self.log(f'Click Error > {TagetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                self.log(f'Click Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
         #self.screenshot(f'Click_Error')
-        self.log(f'Error : Click > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
 
     def Send(self, Elements=None, Value=None, Index=None, clear:bool=True, enter:bool=False, retry_count:int=-1):
         """
@@ -469,32 +469,32 @@ class Win:
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
         ElementValue = self.ElementValue
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,Index=Index, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=Index, retry_count=retry_count)
         #self.screenshot(f'Send')
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             if clear == True:
                 try:
                     ElementHandle.clear()
-                    self.log(f'clear > {TagetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                    self.log(f'clear > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
                 except:
-                    self.log(f'clear Error > {TagetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                    self.log(f'clear Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
                 time.sleep(self.__after__)
             try:
                 if ElementValue != '':
                     ElementHandle.send_keys(ElementValue)
-                    self.log(f'Send > {TagetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
+                    self.log(f'Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
                 if enter == True:
                     time.sleep(self.__after__)
                     ElementHandle.send_keys('\ue007')
                 #self.screenshot(f'Send')
                 return self
             except:
-                self.log(f'Send Error > {TagetElement}[{ElementIndex}] > "{ElementValue}"\n{sys.exc_info()}', write_log=self.__class_log__)
+                self.log(f'Send Error > {TargetElement}[{ElementIndex}] > "{ElementValue}"\n{sys.exc_info()}', write_log=self.__class_log__)
         #self.screenshot(f'Send_Error')
-        self.log(f'Error : Send > {TagetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
+        self.log(f'Error : Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
 
     def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, retry_count:int=-1):
         """
@@ -507,9 +507,9 @@ class Win:
         self.__ElementHandle__(Elements)
         ElementValue = self.ElementValue
         ElementValueType = self.ElementValueType
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
             
-        self.WaitElement(TagetElement,none_error=True, retry_count=retry_count)
+        self.WaitElement(TargetElement,none_error=True, retry_count=retry_count)
         ElementValueList = []
         ElementHandle = self.ElementHandle
         for Index in range(len(ElementHandle)):
@@ -527,8 +527,8 @@ class Win:
 
                 ElementValueList.append(GetValue)
             except:
-                self.log(f'FindValues Error > {TagetElement}[{Index}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'FindValues > {TagetElement} > {ElementValueList}', write_log=self.__class_log__)
+                self.log(f'FindValues Error > {TargetElement}[{Index}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'FindValues > {TargetElement} > {ElementValueList}', write_log=self.__class_log__)
         self.ElementValueList = ElementValueList
         if ElementValue in ElementValueList:
             Index = ElementValueList.index(ElementValue)
@@ -557,10 +557,10 @@ class Win:
         """
         """
         self.__ElementHandle__(Elements)
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
         
 
-        self.WaitElement(TagetElement,none_error=True, retry_count=retry_count)
+        self.WaitElement(TargetElement,none_error=True, retry_count=retry_count)
         ElementAttribute = []
         ElementHandle = self.ElementHandle
         for Index in range(len(ElementHandle)):       
@@ -582,11 +582,11 @@ class Win:
                         if attribute == 'textContent' or attribute == 'text':
                             get_attribute[attribute] = ElementHandle[Index].text
                 except:
-                    self.log(f'GetAttribute Error > {TagetElement}[{Index}][{attribute}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                    self.log(f'GetAttribute Error > {TargetElement}[{Index}][{attribute}]\n{sys.exc_info()}', write_log=self.__class_log__)
             time.sleep(0.1)
             ElementAttribute.append(get_attribute)
     
-        self.log(f'GetAttribute > {TagetElement} > {ElementAttribute}', write_log=self.__class_log__)
+        self.log(f'GetAttribute > {TargetElement} > {ElementAttribute}', write_log=self.__class_log__)
         self.ElementAttribute = ElementAttribute
         return self
 
@@ -609,9 +609,9 @@ class Win:
             self.__ElementHandle__(self.__desktop_handle__)
         
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,Index=ElementIndex, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             try:
@@ -624,11 +624,11 @@ class Win:
                 action.release()
                 action.perform()
                 time.sleep(self.__after__)
-                self.log(f'Mouse_move > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_move > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
                 return self
             except:
-                self.log(f'Mouse_move Error > {TagetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Mouse_move > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_move Error > {TargetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'Error : Mouse_move > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
 
     def Mouse_left_click(self, Elements=None, Index=None, point:dict={'x':0,'y':0}, wait=0.5, retry_count:int=-1):
         '''
@@ -643,9 +643,9 @@ class Win:
             self.__ElementHandle__(self.__desktop_handle__)
         
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,Index=ElementIndex, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             try:
@@ -660,11 +660,11 @@ class Win:
                 action.perform()
                 
                 time.sleep(self.__after__)
-                self.log(f'Mouse_left_click > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_left_click > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
                 return self
             except:
-                self.log(f'Mouse_left_click Error > {TagetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Mouse_left_click > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_left_click Error > {TargetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'Error : Mouse_left_click > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
 
 
     def Mouse_right_click(self, Elements=None, Index=None, point:dict={'x':0,'y':0}, wait=0.5, retry_count:int=-1):
@@ -680,9 +680,9 @@ class Win:
             self.__ElementHandle__(self.__desktop_handle__)
         
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,Index=ElementIndex, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             try:
@@ -697,11 +697,11 @@ class Win:
                 action.perform()
                 
                 time.sleep(self.__after__)
-                self.log(f'Mouse_right_click > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_right_click > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
                 return self
             except:
-                self.log(f'Mouse_right_click Error > {TagetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Mouse_right_click > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_right_click Error > {TargetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'Error : Mouse_right_click > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
 
 
     def Mouse_double_click(self, Elements=None, Index=None, point:dict={'x':0,'y':0}, wait=0.5, retry_count:int=-1):
@@ -717,9 +717,9 @@ class Win:
             self.__ElementHandle__(self.__desktop_handle__)
         
         ElementIndex = self.ElementIndex
-        TagetElement = self.ElementHandle
+        TargetElement = self.ElementHandle
 
-        self.WaitElement(TagetElement,Index=ElementIndex, retry_count=retry_count)
+        self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             try:
@@ -734,17 +734,17 @@ class Win:
                 action.perform()
                 
                 time.sleep(self.__after__)
-                self.log(f'Mouse_double_click > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_double_click > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
                 return self
             except:
-                self.log(f'Mouse_double_click Error > {TagetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Mouse_double_click > {TagetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
+                self.log(f'Mouse_double_click Error > {TargetElement}[{ElementIndex}][{point}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'Error : Mouse_double_click > {TargetElement}[{ElementIndex}][{point}]', write_log=self.__class_log__)
 
-    def Mouse_drag(self, SourceElements=None, SourceIndex=None, TagetElements=None, Taget_index=None, source_offset={'x':None,'y':None}, taget_offset={'x':None,'y':None}, wait=1, retry_count:int=-1):
+    def Mouse_drag(self, SourceElements=None, SourceIndex=None, TargetElements=None, Target_index=None, source_offset={'x':None,'y':None}, target_offset={'x':None,'y':None}, wait=1, retry_count:int=-1):
         """
             ElementHandle의 ElementIndex번째 Element를
-            Taget_Element의 Taget_index번째 Element로 드래그엔 드랍
-            ElementHandle은 TagetElement로 갱신됨
+            Target_Element의 Target_index번째 Element로 드래그엔 드랍
+            ElementHandle은 TargetElement로 갱신됨
         """
 
         if 'x' in source_offset.keys():
@@ -757,15 +757,15 @@ class Win:
         else:
             source_offset_y = None
 
-        if 'x' in taget_offset.keys():
-            taget_offset_x = taget_offset['x']
+        if 'x' in target_offset.keys():
+            target_offset_x = target_offset['x']
         else:
-            taget_offset_x = None
+            target_offset_x = None
 
         if 'y' in source_offset.keys():
-            taget_offset_y = taget_offset['y']
+            target_offset_y = target_offset['y']
         else:
-            taget_offset_y = None
+            target_offset_y = None
 
         if SourceElements:
             self.__ElementIndex__(SourceElements,SourceIndex)
@@ -779,52 +779,131 @@ class Win:
         SourceIndex = self.ElementIndex
         self.ElementIndex = None
 
-        if TagetElements:
-            self.__ElementIndex__(TagetElements,Taget_index)
-            self.__ElementHandle__(TagetElements)
+        if TargetElements:
+            self.__ElementIndex__(TargetElements,Target_index)
+            self.__ElementHandle__(TargetElements)
         else:
             self.refresh_desktop_handle()
-            self.__ElementIndex__(self.__desktop_handle__,Taget_index)
+            self.__ElementIndex__(self.__desktop_handle__,Target_index)
             self.__ElementHandle__(self.__desktop_handle__)
 
-        TagetElement = self.ElementHandle
-        TagetIndex = self.ElementIndex
+        TargetElement = self.ElementHandle
+        TargetIndex = self.ElementIndex
 
         self.WaitElement(SourceElement,Index=SourceIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             Sourece_ElementCheck = self.ElementHandle[SourceIndex]
-            self.WaitElement(TagetElement,Index=TagetIndex, retry_count=retry_count)
+            self.WaitElement(TargetElement,Index=TargetIndex, retry_count=retry_count)
             if len(self.ElementHandle) > 0:
-                Taget_ElementCheck = self.ElementHandle[TagetIndex]
+                Target_ElementCheck = self.ElementHandle[TargetIndex]
                 try:
                     action = self.action()
                     Soureces = Sourece_ElementCheck
-                    Taget = Taget_ElementCheck
+                    Target = Target_ElementCheck
                     action.move_to_element_with_offset(Soureces, xoffset=source_offset_x, yoffset=source_offset_y).click_and_hold().pause(wait*1).perform()
                     time.sleep(wait*1)
-                    action.move_to_element_with_offset(Taget, xoffset=taget_offset_x, yoffset=taget_offset_y).pause(wait*1).release().perform()
-                    self.log(f'Mouse_element_drag > {SourceElement}[{SourceIndex}][{source_offset}] > {TagetElement}[{TagetIndex}][{taget_offset}]', write_log=self.__class_log__)
+                    action.move_to_element_with_offset(Target, xoffset=target_offset_x, yoffset=target_offset_y).pause(wait*1).release().perform()
+                    self.log(f'Mouse_element_drag > {SourceElement}[{SourceIndex}][{source_offset}] > {TargetElement}[{TargetIndex}][{target_offset}]', write_log=self.__class_log__)
                     return self
                 except:
-                    self.log(f'Mouse_element_drag error > {SourceElement}[{SourceIndex}][{source_offset}] > {TagetElement}[{TagetIndex}][{taget_offset}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Mouse_element_drag > {SourceElement}[{SourceIndex}][{source_offset}] > {TagetElement}[{TagetIndex}][{taget_offset}]', write_log=self.__class_log__)
+                    self.log(f'Mouse_element_drag error > {SourceElement}[{SourceIndex}][{source_offset}] > {TargetElement}[{TargetIndex}][{target_offset}]\n{sys.exc_info()}', write_log=self.__class_log__)
+        self.log(f'Error : Mouse_element_drag > {SourceElement}[{SourceIndex}][{source_offset}] > {TargetElement}[{TargetIndex}][{target_offset}]', write_log=self.__class_log__)
 
+    def compare(self, target1, target2, compare_type='==', pass_type=0, fail_type=-1):
+        compare_text = f'target1: "{target1}" {compare_type} "{target2}"'
+        
+        compare_list = ['!=', '==', '>=', '<=', '>', '<', 'in', 'not in']
+        if compare_type in compare_list:
+            if compare_type == '!=' and target1 != target2:
+                return pass_type, compare_text
 
+            elif compare_type == '==' and target1 == target2:
+                return pass_type, compare_text
 
+            elif compare_type == '>=' and target1 >= target2:
+                return pass_type, compare_text
 
-'''
-def FindImage(self):
-    Finding = 0
-    for _ in range(self.__retry__):
-        imgpos = pyautogui.locateOnScreen(self.file_path, confidence=self.confidence, grayscale=True)
-        if imgpos != None:
-            break
+            elif compare_type == '<=' and target1 <= target2:
+                return pass_type, compare_text
+
+            elif compare_type == '>' and target1 > target2:
+                return pass_type, compare_text
+
+            elif compare_type == '<' and target1 < target2:
+                return pass_type, compare_text
+
+            elif compare_type == 'in' and target1 in target2:
+                return pass_type, compare_text
+
+            elif compare_type == 'not in' and target1 not in target2:
+                return pass_type, compare_text
+            else:
+                return fail_type, f'fail > ({compare_text})'
         else:
-            Finding += 1
-            time.sleep(self.__after__)
+            raise Exception(f'compare_type: "{compare_type}" not in compare_list: {compare_list}')
 
-    if imgpos == None:
-        return None
-    else:
-        return imgpos
-'''
+    def func_log(self, result:tuple):
+        '''
+            log_type : 0 > by pass
+            log_tpye : 1 > start
+            log_tpye : 2 > check
+            log_tpye : 3 > end
+
+            log_tpye : -2 > Warning
+            log_tpye : -1 > Error
+        '''
+        func_name = inspect.stack()[1][3]
+        log_type, log_text = result
+
+        if log_type == 1:
+            if log_text:
+                text = f'[==== {func_name} start > {log_text} ====]'
+            else:
+                text = f'[==== {func_name} start ====]'
+
+        elif log_type == 2:
+            if log_text:
+                text = f'[==== {func_name} check > {log_text} ====]'
+            else:
+                text = f'[==== {func_name} check ====]'
+        
+        elif log_type == 3:
+            if log_text:
+                text = f'[==== {func_name} end > {log_text} ====]'
+            else:
+                text = f'[==== {func_name} end ====]'
+        
+        elif log_type == -2:
+            if log_text:
+                text = f'Warning : {func_name} > {log_text}'
+            else:
+                text = f'Warning : {func_name}'
+
+        elif log_type == -1:
+            if log_text:
+                text = f'Error : {func_name} > {log_text}'
+            else:
+                text = f'Error : {func_name}'
+        else:
+            text = f'[{func_name}] {log_text}'
+
+        return text
+
+
+    def compare_log(self, target1, target2, func_type:str='==', pass_type=0, fail_type=-1):
+        '''
+            pass_type, fail_type
+            log_type : 0 > by pass < pass_type
+            log_tpye : 1 > start
+            log_tpye : 2 > check
+            log_tpye : 3 > end
+            log_tpye : -2 > Warning
+            log_tpye : -1 > Error < fail_type
+
+            return log_type
+        '''
+        log_type, log_text = self.compare(target1,target2,func_type=func_type, pass_type=pass_type, fail_type=fail_type)
+        
+        self.log(self.func_log((log_type,log_text)),write_log=self.__class_log__)
+        
+        return log_type
