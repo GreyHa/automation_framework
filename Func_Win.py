@@ -887,7 +887,7 @@ class Win:
             text = f'[{func_name}] {log_text}'
 
         self.log(text,write_log=self.__class_log__)
-
+        return log_type
 
     def compare_log(self, target1, target2, compare_type:str='==', pass_type=0, fail_type=-1):
         '''
