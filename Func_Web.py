@@ -16,7 +16,7 @@ import selenium.common.exceptions as selenium_exception
 
 __platform__ = 'Web'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
-__time__ = time.strftime(f'%Y%m%d_%H%M%S',time.localtime(time.time()))
+__time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
 #debug mode chrome
 # windows
@@ -836,6 +836,8 @@ class Web:
                 text = f'[==== {func_name} end > {log_text} ====]'
             else:
                 text = f'[==== {func_name} end ====]'
+            
+            self.warning_list = [] #reset
         
         elif log_type == -2:
             if log_text:

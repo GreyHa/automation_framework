@@ -13,7 +13,7 @@ from appium.webdriver.common.touch_action import TouchAction
 
 __platform__ = 'AOS'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
-__time__ = time.strftime(f'%Y%m%d_%H%M%S',time.localtime(time.time()))
+__time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
 class AOS:
     def __init__(self, DeviceInfo, AppiumServerInfo={'ip':'127.0.0.1','port':'4723'}, Delay={'retry':5, 'after':1}, ClassOption={}):
@@ -886,6 +886,8 @@ class AOS:
                 text = f'[==== {func_name} end > {log_text} ====]'
             else:
                 text = f'[==== {func_name} end ====]'
+                
+            self.warning_list = [] #reset
         
         elif log_type == -2:
             if log_text:

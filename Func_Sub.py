@@ -27,7 +27,7 @@ def get_hash(file_path, func_type='md5'):
         return hashlib.sha256(FileData).hexdigest()
 
     else:
-        raise Exception(f'func_type error')
+        raise Exception('func_type error')
         
 def find_img_position(file_path, region=(), confidence:int=0.75, grayscale:bool=True, retry:int=5, wait:int=1):
     '''

@@ -13,7 +13,7 @@ from selenium.webdriver.common.keys import Keys
 
 __platform__ = 'Win'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
-__time__ = time.strftime(f'%Y%m%d_%H%M%S',time.localtime(time.time()))
+__time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
 class Win:
     def __init__(self, WindowsHandle=None, DriverInfo={'ip':'127.0.0.1','port':'4723'}, Delay={'retry':5, 'after':1}, ClassOption={}):
@@ -871,7 +871,9 @@ class Win:
                 text = f'[==== {func_name} end > {log_text} ====]'
             else:
                 text = f'[==== {func_name} end ====]'
-        
+                
+            self.warning_list = [] #reset
+
         elif log_type == -2:
             if log_text:
                 text = f'Warning : {func_name} > {log_text}'
