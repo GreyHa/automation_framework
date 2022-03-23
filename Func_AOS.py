@@ -825,7 +825,7 @@ class AOS:
         self.adb_shell(command='am start',args=app_id)
 
     def compare(self, target1, target2, compare_type='==', pass_type=0, fail_type=-1):
-        compare_text = f'target1: "{target1}" {compare_type} "{target2}"'
+        compare_text = f'"{target1}" {compare_type} "{target2}"'
         
         compare_list = ['!=', '==', '>=', '<=', '>', '<', 'in', 'not in']
         if compare_type in compare_list:
@@ -886,7 +886,7 @@ class AOS:
                 text = f'[==== {func_name} end > {log_text} ====]'
             else:
                 text = f'[==== {func_name} end ====]'
-                
+            
             self.warning_list = [] #reset
         
         elif log_type == -2:
@@ -906,7 +906,7 @@ class AOS:
         self.log(text,write_log=self.__class_log__)
         return log_type
 
-    def compare_log(self, target1, target2, compare_type:str='==', pass_type=0, fail_type=-1):
+    def compare_log(self, target1, target2, compare_type:str='==', pass_type=0, fail_type=-1, log_text:str=''):
         '''
             pass_type, fail_type
             log_type : 0 > by pass < pass_type
@@ -918,8 +918,13 @@ class AOS:
 
             return log_type
         '''
-        log_type, log_text = self.compare(target1,target2,compare_type=compare_type,pass_type=pass_type,fail_type=fail_type)
+        log_type, log_text2 = self.compare(target1,target2,compare_type=compare_type,pass_type=pass_type,fail_type=fail_type)
+        
+        if log_text:
+            text = f'{log_text} : {log_text2}'
+        else:
+            text = log_text2
 
-        self.func_log(log_type,log_text)
+        self.func_log(log_type,text)
 
         return log_type
