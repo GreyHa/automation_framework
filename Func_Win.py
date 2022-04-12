@@ -101,10 +101,8 @@ class Win:
 
         self.__error__ = ''
         self.warning_list = []   
-        self.class_data_01 = ''
-        self.class_data_02 = ''
-        self.class_data_03 = ''
-        self.class_data_04 = ''
+        self.func_log_list = []
+
 
         self.path_create(os.path.dirname(self.__log_file_path__))
         self.path_create(os.path.dirname(self.__screenshot_path__))
@@ -871,8 +869,6 @@ class Win:
                 text = f'[==== {func_name} end > {log_text} ====]'
             else:
                 text = f'[==== {func_name} end ====]'
-            
-            self.warning_list = [] #reset
         
         elif log_type == -2:
             if log_text:
@@ -888,6 +884,9 @@ class Win:
         else:
             text = f'[{func_name}] {log_text}'
 
+        self.func_log_list.append(text)
+        if log_type == 3:
+            self.func_log_list = []
         self.log(text,write_log=self.__class_log__)
         return log_type
 

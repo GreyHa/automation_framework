@@ -103,10 +103,7 @@ class AOS:
 
         self.__error__ = ''
         self.warning_list = []   
-        self.class_data_01 = ''
-        self.class_data_02 = ''
-        self.class_data_03 = ''
-        self.class_data_04 = ''
+        self.func_log_list = []
 
         self.driver = webdriver.Remote(command_executor=self.__appium_host__, desired_capabilities=self.__device_info__)
 
@@ -886,8 +883,6 @@ class AOS:
                 text = f'[==== {func_name} end > {log_text} ====]'
             else:
                 text = f'[==== {func_name} end ====]'
-            
-            self.warning_list = [] #reset
         
         elif log_type == -2:
             if log_text:
@@ -903,6 +898,9 @@ class AOS:
         else:
             text = f'[{func_name}] {log_text}'
 
+        self.func_log_list.append(text)
+        if log_type == 3:
+            self.func_log_list = []
         self.log(text,write_log=self.__class_log__)
         return log_type
 
