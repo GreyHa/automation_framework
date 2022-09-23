@@ -494,7 +494,7 @@ class Win:
         #self.screenshot(f'Send_Error')
         self.log(f'Error : Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
 
-    def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, retry_count:int=-1):
+    def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, strip_value=False, retry_count:int=-1):
         """
             찾은 Element의 구성요소 값을 찾아서 ElementValueList에 갱신
             만약 ElementValueList에 Value값이 존재 한다면 ElementIndex에 갱신
@@ -523,7 +523,11 @@ class Win:
                     if ElementValueType == 'textContent' or ElementValueType == 'text':
                         GetValue = ElementHandle[Index].text
 
+                if strip_value == True:
+                    GetValue = GetValue.strip()
+
                 ElementValueList.append(GetValue)
+
             except:
                 self.log(f'FindValues Error > {TargetElement}[{Index}]\n{sys.exc_info()}', write_log=self.__class_log__)
         self.log(f'FindValues > {TargetElement} > {ElementValueList}', write_log=self.__class_log__)
