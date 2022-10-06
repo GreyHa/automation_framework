@@ -916,3 +916,11 @@ class Win:
         self.func_log(log_type,text)
 
         return log_type
+
+    def sleep(self,second=0):
+        if second == 0:
+            time.sleep(self.__after__)
+            self.log(f'sleep: {self.__after__}')
+        
+        else:
+            self.log(f'sleep: {second}')
