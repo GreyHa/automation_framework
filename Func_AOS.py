@@ -941,3 +941,6 @@ class AOS:
         
         else:
             self.log(f'sleep: {second}')
+
+    def hide_keyboard(self):
+        self.driver.hide_keyboard()
