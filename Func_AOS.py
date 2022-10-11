@@ -721,7 +721,9 @@ class AOS:
     def key_home(self):
         #https://developer.android.com/reference/android/view/KeyEvent#KEYCODE_HOME
         self.keycode(3)
-
+        
+    def key_notification(self):
+        self.keycode(83)
 
     def key_app_switch(self):
         self.keycode(187)
