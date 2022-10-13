@@ -942,6 +942,7 @@ class AOS:
             self.log(f'sleep: {self.__after__}')
         
         else:
+            time.sleep(second)
             self.log(f'sleep: {second}')
 
     def hide_keyboard(self):

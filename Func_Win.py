@@ -923,4 +923,5 @@ class Win:
             self.log(f'sleep: {self.__after__}')
         
         else:
+            time.sleep(second)
             self.log(f'sleep: {second}')
