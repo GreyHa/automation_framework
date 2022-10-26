@@ -62,18 +62,9 @@ def check_img(img_path, img_path2, accuracy:int=0.3):
     good = []
     for m,n in matches:
         if m.distance < accuracy*n.distance:
-            good.append([m])
+            good.append(kp1[m.queryIdx].pt)
 
-    if kp1 == kp2:
-        pass
-        #img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,None,flags=2)
-        #plt.imshow(img3),plt.show()
-        #print(good)
-        #print(len(good))
-        #knn_image = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
-        #plt.imshow(knn_image)
-        #plt.show()
-    print(f'check_img > result: {len(good)}')
+    print(f'check_img > result: [{len(good)}]{good}')
     return len(good)
 
 def check_img_screen(driver, check_img_path, accuracy=0.3, pass_count=1):

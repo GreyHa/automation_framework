@@ -2,7 +2,6 @@
 #!/usr/bin/env python3
 #https://selenium-python.readthedocs.io/api.html#selenium.webdriver.common.touch_actions.TouchActions.scroll
 
-from asyncore import write
 import time, os, base64, sys, inspect
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
@@ -565,7 +564,7 @@ class AOS:
         self.ElementAttribute = ElementAttribute
         return self
 
-    def Slide(self, TargetElements=None, TargetIndex=None, offset:dict={'x':0,'y':0}, retry_count:int=-1):
+    def Slide(self, TargetElements=None, TargetIndex=None, offset=(0,0), retry_count:int=-1):
         """
             ElementHandle의 ElementIndex번째 Element를
             TargetElements의 TargetIndex번째 위치로 슬라이드
@@ -573,8 +572,7 @@ class AOS:
             
             만약 TargetElements 값을 입력 하지 않으면 ElementHandle 위치 기점으로 offset 위치 까지 슬라이드
         """
-        offset_x = offset['x']
-        offset_y = offset['y']
+        offset_x, offset_y = offset
 
         SoureceElement = self.ElementHandle
         if self.ElementIndex:
@@ -731,23 +729,20 @@ class AOS:
     def key_back(self):
         self.keycode(4)
 
-    def touch_point(self, point:dict={'x':0,'y':0}, wait=0):        
+    def touch_point(self, point=(0,0), wait=0):        
         action = self.touchaction()
-        point_x = point['x']
-        point_y = point['y']
-        
+        point_x, point_y = point
+
         action.press(x=point_x,y=point_y)
         action.wait(wait*1000)
         action.release()
         action.perform()
         time.sleep(self.__after__)
 
-    def slide_point(self, point:dict={'x':0,'y':0}, point2:dict={'x':0,'y':0}, wait=1):
+    def slide_point(self, point=(0,0), point2=(0,0), wait=1):
         action = self.touchaction()
-        point_x = point['x']
-        point_y = point['y']
-        point2_x = point2['x']
-        point2_y = point2['y']
+        point_x, point_y = point
+        point2_x, point2_y = point2
 
         action.press(x=point_x,y=point_y)
         action.wait(wait*1000)
