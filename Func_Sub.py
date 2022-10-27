@@ -65,7 +65,7 @@ def check_img(img_path, img_path2, accuracy:int=0.3):
             good.append(kp1[m.queryIdx].pt)
 
     print(f'check_img > result: [{len(good)}]{good}')
-    return len(good)
+    return good
 
 def check_img_screen(driver, check_img_path, accuracy=0.3, pass_count=1):
     screenshot_path = driver.screenshot(file_name='check_img_screen')

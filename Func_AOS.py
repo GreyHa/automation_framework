@@ -6,6 +6,9 @@ import time, os, base64, sys, inspect
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from appium.webdriver.common.touch_action import TouchAction
+from cv2 import cv2
+from pathlib import Path
+import numpy as np
 
 #from Func_Common import NowTime
 #from Func_Common import path_create
@@ -432,22 +435,13 @@ class AOS:
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
         TargetElement = self.ElementHandle
-        if 'x' in offset.keys():
-            offset_x = offset['x']
-        else:
-            offset_x = None
-
-        if 'y' in offset.keys():
-            offset_y = offset['y']
-        else:
-            offset_y = None
-        
+        offset_x, offset_y = offset        
 
         self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
             try:
-                if offset_x != None or offset_y != None:
+                if offset_x != 0 or offset_y != 0:
                     bounds = ElementHandle.get_attribute('bounds')
                     bounds_split = bounds[:-1].replace('[','').split(']')
                     bounds_start = bounds_split[0].split(',')
@@ -456,15 +450,8 @@ class AOS:
                     center_x = int((int(bounds_start[0]) + int(bounds_end[0]))/2)
                     center_y = int((int(bounds_start[1]) + int(bounds_end[1]))/2)
 
-                    if offset_x != None:
-                        point_x = center_x + offset_x
-                    else:
-                        point_x = center_x
-
-                    if offset_y != None:
-                        point_y = center_y + offset_y
-                    else:
-                        point_y = center_y
+                    point_x = center_x + offset_x
+                    point_y = center_y + offset_y
 
                     action = TouchAction(self.driver)
                     action.press(x=point_x,y=point_y)
@@ -942,3 +929,31 @@ class AOS:
 
     def hide_keyboard(self):
         self.driver.hide_keyboard()
+
+    def check_img(self, base_img, template_img, accuracy:int=0.3):
+        img_array1 = np.fromfile(Path(base_img), np.uint8)
+        img_array2 = np.fromfile(Path(template_img), np.uint8)
+
+        img1 = cv2.imdecode(img_array1,0)
+        img2 = cv2.imdecode(img_array2,0)
+
+        sift = cv2.xfeatures2d.SIFT_create()
+        kp1, des1 = sift.detectAndCompute(img1,None)
+        kp2, des2 = sift.detectAndCompute(img2,None)
+        bf = cv2.BFMatcher()
+        matches = bf.knnMatch(des1,des2, k=2)
+        good = []
+        for m,n in matches:
+            if m.distance < accuracy*n.distance:
+                good.append(kp1[m.queryIdx].pt)
+
+        self.func_log(0,f'result: [{len(good)}]{good}')
+        return good
+
+    def touch_img(self, base_img, template_img, find_index=0, accuracy=0.3, offset=(0,0)):
+        img_points = self.check_img(base_img, template_img, accuracy)
+
+        if img_points:
+            self.touch_point(img_points[find_index])
+        else:
+            self.func_log(-1,f'not find img', write_log=self.__class_log__)
