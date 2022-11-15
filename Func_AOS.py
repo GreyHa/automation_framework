@@ -424,7 +424,7 @@ class AOS:
             self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
             return self
 
-    def Click(self, Elements=None, Index=None, offset={'x':None,'y':None}, retry_count:int=-1):
+    def Click(self, Elements=None, Index=None, offset=(0,0), retry_count:int=-1):
         """
             찾은 Elements에서 Index 번째의 Element에 마우스 오버 및 클릭
 
@@ -436,7 +436,7 @@ class AOS:
         ElementIndex = self.ElementIndex
         TargetElement = self.ElementHandle
         offset_x, offset_y = offset        
-
+        
         self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
@@ -602,7 +602,7 @@ class AOS:
         #self.screenshot(f'Scrolle_Error')
         self.log(f'Error : Slide > {TargetElement}[{Targetindex}]', write_log=self.__class_log__)
 
-    def LongPress(self, Elements=None, Index=None, offset={'x':None,'y':None}, duration=1, retry_count:int=-1):
+    def LongPress(self, Elements=None, Index=None, offset=(0,0), duration=1, retry_count:int=-1):
         """
             찾은 Elements에서 Index 번째의 Element에 롱프레스
         """
@@ -610,20 +610,12 @@ class AOS:
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
         TargetElement = self.ElementHandle
-        if 'x' in offset.keys():
-            offset_x = offset['x']
-        else:
-            offset_x = None
-
-        if 'y' in offset.keys():
-            offset_y = offset['y']
-        else:
-            offset_y = None
+        offset_x, offset_y = offset
         
         self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
-            if offset_x != None or offset_y != None:
+            if offset_x != 0 or offset_y != 0:
                 bounds = ElementHandle.get_attribute('bounds')
                 bounds_split = bounds[:-1].replace('[','').split(']')
                 bounds_start = bounds_split[0].split(',')
@@ -952,8 +944,12 @@ class AOS:
 
     def touch_img(self, base_img, template_img, find_index=0, accuracy=0.3, offset=(0,0)):
         img_points = self.check_img(base_img, template_img, accuracy)
+        offset_x, offset_y = offset
+        center_x, center_y = img_points[find_index]
+        point_x = center_x + offset_x
+        point_y = center_y + offset_y
 
         if img_points:
-            self.touch_point(img_points[find_index])
+            self.touch_point((point_x,point_y))
         else:
             self.func_log(-1,f'not find img', write_log=self.__class_log__)
