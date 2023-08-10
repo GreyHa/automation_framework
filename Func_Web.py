@@ -525,7 +525,7 @@ class Web:
                 self.log(f'DisplayElement Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
         self.log(f'Error : DisplayElement > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
 
-    def Click(self, Elements=None, Index=None, auto_scroll:bool=True, retry_count:int=-1):
+    def Click(self, Elements=None, Index=None, auto_scroll:bool=True, offset=(0,0), retry_count:int=-1):
         """
             찾은 Elements에서 Index 번째의 Element에 마우스 오버 및 클릭
         """
@@ -533,7 +533,8 @@ class Web:
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
         TargetElement = self.ElementHandle
-
+        offset_x, offset_y = offset 
+        
         self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
@@ -551,15 +552,21 @@ class Web:
             try:
                 #https://stackoverflow.com/questions/11908249/debugging-element-is-not-clickable-at-point-error
                 #일부 Elemet 클릭시 마우스 오버 동작이 필요한 경우가 있습니다.
-                ActionChains(self.driver).move_to_element(ElementHandle).perform()
-                try:
-                    ElementHandle.click()
-                except selenium_exception.ElementClickInterceptedException:
-                        ElementHandle.send_keys(Keys.ENTER)
-                except:
-                        self.log(f'Error > {sys.exc_info()}', write_log=self.__class_log__)
+                if offset_x == 0 and offset_y == 0:
+                    ActionChains(self.driver).move_to_element(ElementHandle).perform()
 
-                self.log(f'Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                    try:
+                        ElementHandle.click()
+                    except selenium_exception.ElementClickInterceptedException:
+                            ElementHandle.send_keys(Keys.ENTER)
+                    except:
+                            self.log(f'Error > {sys.exc_info()}', write_log=self.__class_log__)
+
+                    self.log(f'Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                else:
+                    ActionChains(self.driver).move_to_element(ElementHandle).move_by_offset(offset_x, offset_y).click().perform()
+                    self.log(f'Click[{offset_x},{offset_y}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+
                 return self
             except:
                 self.log(f'Click Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
