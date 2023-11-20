@@ -86,6 +86,11 @@ class Win:
         else:
             self.__warning_collection__ = True
 
+        if 'print_log' in ClassOption.keys():
+            self.__print_log__ = ClassOption['print_log']
+        else:
+            self.__print_log__ = True
+
         if 'retry' in Delay:
             self.__retry__ = Delay['retry']
         else:
@@ -247,7 +252,7 @@ class Win:
             except:
                 print(sys.exc_info())
 
-    def log(self, log_text, write_log=True, print_log:bool=True):
+    def log(self, log_text, write_log=True):
         if self.__warning_collection__ == True:
             if str(log_text)[0:7].lower() == 'warning':
                 self.warning_list.append(log_text)
@@ -258,7 +263,7 @@ class Win:
         else:
             log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
         
-        if print_log == True:
+        if self.__print_log__ == True:
             print(log_write, end='')
 
         if write_log == True:
