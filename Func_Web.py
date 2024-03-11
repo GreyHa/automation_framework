@@ -3,7 +3,7 @@
 #https://fenderist.tistory.com/168
 #https://selenium-python.readthedocs.io/api.html#module-selenium.webdriver.support.expected_conditions
 
-import time, os, sys, inspect
+import time, os, sys, inspect, traceback
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -316,7 +316,10 @@ class Web:
             log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
         
         if self.__print_log__ == True:
-            print(log_write, end='')
+            try:
+                print(log_write, end='')
+            except:
+                print(traceback.format_exc())
 
         if write_log == True:
             try:

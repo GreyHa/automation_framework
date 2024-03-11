@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 #https://selenium-python.readthedocs.io/api.html#selenium.webdriver.common.touch_actions.TouchActions.scroll
 
-import time, os, base64, sys, inspect
+import time, os, base64, sys, inspect, traceback
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from appium.webdriver.common.touch_action import TouchAction
@@ -256,7 +256,10 @@ class AOS:
             log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
         
         if self.__print_log__ == True:
-            print(log_write, end='')
+            try:
+                print(log_write, end='')
+            except:
+                print(traceback.format_exc())
 
         if write_log == True:
             try:
