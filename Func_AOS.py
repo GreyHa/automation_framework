@@ -538,15 +538,29 @@ class AOS:
                 try:
                     get_value = ElementHandle[Index].get_attribute(attribute)
                     if get_value != None:
-                        if attribute != 'textContent' or attribute != 'text':
+                        if attribute == 'bounds':
+                            #[0,262][1080,2501]
+                            #0,262]1080,2501]
+                            # 0 = [0, 262]
+                            # 1 = [1080,2501]
+                            bounds_split = get_value[:-1].replace('[','').split(']')
+                            bounds0 = bounds_split[0].split(',')
+                            bounds1 = bounds_split[1].split(',')
+                            
+                            get_attribute[attribute] = [[int(bounds0[0]),int(bounds0[1])],[int(bounds1[0]),int(bounds1[1])]]
+
+                        elif attribute != 'textContent' or attribute != 'text':
                             if get_value == 'true':
                                 get_attribute[attribute] = True
                             elif get_value == 'false':
                                 get_attribute[attribute] = False
                             else:
                                 get_attribute[attribute] = get_value
+                        
                         else:
                             get_attribute[attribute] = get_value
+                        
+                        print(get_attribute)
                     else:
                         if attribute == 'textContent' or attribute == 'text':
                             get_attribute[attribute] = ElementHandle[Index].text
@@ -720,6 +734,7 @@ class AOS:
         action = self.touchaction()
         point_x, point_y = point
 
+        self.log(f'touch_point > {point}', write_log=self.__class_log__)
         action.press(x=point_x,y=point_y)
         action.wait(wait*1000)
         action.release()
@@ -793,9 +808,12 @@ class AOS:
         action.perform()
         time.sleep(self.__after__)
     
-    def app_close(self):
+    def slide_app_close(self, level=2):
         self.key_app_switch()
-        self.slide_up(level=2)
+        self.slide_up(level=level)
+
+    def app_start(self,app_id):
+        self.driver.activate_app(app_id=app_id)
 
     def adb_shell(self, command, args):
         #args = {'command':'pm clear','args':'io.swit'}
@@ -810,7 +828,7 @@ class AOS:
         self.adb_shell(command='am force-stop',args=app_id)
 
     def adb_app_start(self, app_id):
-        self.adb_shell(command='am start',args=app_id)
+        self.adb_shell(command='monkey',args=f'-p {app_id} -c android.intent.category.LAUNCHER 1')
 
     def compare(self, target1, target2, compare_type='==', pass_type=0, fail_type=-1):
         compare_text = f'"{target1}" {compare_type} "{target2}"'
