@@ -6,6 +6,7 @@ import time, os, base64, sys, inspect, traceback
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 from appium.webdriver.common.touch_action import TouchAction
+from selenium.webdriver.common.keys import Keys
 from cv2 import cv2
 from pathlib import Path
 import numpy as np
@@ -706,7 +707,7 @@ class AOS:
     def action(self):
         return ActionChains(self.driver)
 
-    def keycode(self,code):
+    def keycode(self, code):
         for _ in range(self.__retry__):
             try:
                 self.driver.press_keycode(code)
@@ -716,6 +717,14 @@ class AOS:
                 self.log(f'keycode Error > keycode > code {code}\n{sys.exc_info()}', write_log=self.__class_log__)
                 time.sleep(self.__after__)
         self.log(f'Error : keycode > code {code}', write_log=self.__class_log__)
+
+    def key_send(self, send_keys, sleep=1, enter=False):
+        action = self.action()
+        self.log(f'key_send > "{send_keys}"')
+        action.send_keys(send_keys).pause(seconds=sleep).perform()
+        if enter == True:
+            action.send_keys(Keys.ENTER).pause(seconds=sleep).perform()
+            self.log('key_send > ENTER')
 
     def key_home(self):
         #https://developer.android.com/reference/android/view/KeyEvent#KEYCODE_HOME
@@ -948,9 +957,18 @@ class AOS:
     def hide_keyboard(self):
         self.driver.hide_keyboard()
 
-    def check_img(self, base_img, template_img, accuracy:int=0.3):
-        img_array1 = np.fromfile(Path(base_img), np.uint8)
-        img_array2 = np.fromfile(Path(template_img), np.uint8)
+    def check_img(self, find_img, main_img=None, accuracy:int=0.3):
+        if main_img:
+            img_array1 = np.fromfile(Path(main_img), np.uint8)
+        else:
+            screenshot_path = self.screenshot(file_name='temp_screenshot',screenshot_path='./')
+            img_array1 = np.fromfile(Path(screenshot_path), np.uint8)
+            try:
+                os.remove(screenshot_path)
+            except:
+                pass
+        
+        img_array2 = np.fromfile(Path(find_img), np.uint8)
 
         img1 = cv2.imdecode(img_array1,0)
         img2 = cv2.imdecode(img_array2,0)
