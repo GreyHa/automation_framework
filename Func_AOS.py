@@ -718,13 +718,14 @@ class AOS:
                 time.sleep(self.__after__)
         self.log(f'Error : keycode > code {code}', write_log=self.__class_log__)
 
-    def key_send(self, send_keys, sleep=1, enter=False):
+    def key_send(self, send_keys:list, wait=1):
         action = self.action()
-        self.log(f'key_send > "{send_keys}"')
-        action.send_keys(send_keys).pause(seconds=sleep).perform()
-        if enter == True:
-            action.send_keys(Keys.ENTER).pause(seconds=sleep).perform()
-            self.log('key_send > ENTER')
+        for send_key in send_keys:
+            action_text = f' > "{send_key}"'
+            action.send_keys(send_key).pause(seconds=wait)
+        
+        action.perform()
+        self.log(f'key_send{action_text}')
 
     def key_home(self):
         #https://developer.android.com/reference/android/view/KeyEvent#KEYCODE_HOME
