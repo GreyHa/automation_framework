@@ -689,6 +689,38 @@ class AOS:
 
         return file_path
 
+    def element_screenshot(self, Elements, Index=0, file_name=None, screenshot_path=None):
+
+        self.GetAttribute(Elements=Elements, attribute_list=['bounds'])
+
+        bounds = self.ElementAttribute[Index]['bounds']
+
+        if screenshot_path:
+            __screenshot_path__ = screenshot_path
+        else:
+            __screenshot_path__ = self.__screenshot_path__
+
+        if not(os.path.isdir(__screenshot_path__)):
+            os.makedirs(os.path.join(__screenshot_path__))
+
+        if file_name:
+            origin_file_path = f'{__screenshot_path__}/{self.now_time("file")}_{file_name}_origin.png'
+            file_path = f'{__screenshot_path__}/{self.now_time("file")}_{file_name}.png'
+        else:
+            origin_file_path = f'{__screenshot_path__}/{self.now_time("file")}_origin.png'
+            file_path = f'{__screenshot_path__}/{self.now_time("file")}.png'
+
+        self.driver.save_screenshot(origin_file_path)
+
+        img = cv2.imread(origin_file_path)
+        cv2.imwrite(file_path,img[bounds[0][1]:bounds[1][1],bounds[0][0]:bounds[1][0]])
+        
+        try:
+            os.remove(origin_file_path)
+        except:
+            pass
+
+        return file_path
 
     def recoding_start(self, timeLimit=1800):
         self.driver.start_recording_screen(timeLimit=timeLimit)
@@ -746,7 +778,8 @@ class AOS:
 
         self.log(f'touch_point > {point}', write_log=self.__class_log__)
         action.press(x=point_x,y=point_y)
-        action.wait(wait*1000)
+        if wait > 0:
+            action.wait(wait*1000)
         action.release()
         action.perform()
         time.sleep(self.__after__)
@@ -958,43 +991,80 @@ class AOS:
     def hide_keyboard(self):
         self.driver.hide_keyboard()
 
-    def check_img(self, find_img, main_img=None, accuracy:int=0.3):
-        if main_img:
-            img_array1 = np.fromfile(Path(main_img), np.uint8)
+    def check_element_img(self, Elements, template_img, Index=0, accuracy:int=0.8, debug=False):
+        base_img = self.element_screenshot(Elements=Elements, Index=Index)
+        result = self.check_img(template_img=template_img, base_img=base_img, base_crop=[], accuracy=accuracy, debug=debug)
+        return result
+
+    def check_img(self, template_img, base_img, base_crop=[], accuracy:int=0.8, debug=False):
+        '''
+            base_crop = [(start_y,end_y), (start_x,end_x)] or [bounds[0][1]:bounds[1][1],bounds[0][0]:bounds[1][0]]
+        '''
+        if base_img:
+            img = cv2.imread(base_img)
         else:
-            screenshot_path = self.screenshot(file_name='temp_screenshot',screenshot_path='./')
-            img_array1 = np.fromfile(Path(screenshot_path), np.uint8)
+            screenshot_path = self.screenshot(file_name='temp_screenshot',screenshot_path=self.__screenshot_path__)
+            img = cv2.imread(screenshot_path)
             try:
                 os.remove(screenshot_path)
             except:
                 pass
-        
-        img_array2 = np.fromfile(Path(find_img), np.uint8)
+        result = []
 
-        img1 = cv2.imdecode(img_array1,0)
-        img2 = cv2.imdecode(img_array2,0)
+        imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        if base_crop:
+            imgGray[base_crop[0][0]:base_crop[0][1], base_crop[1][0]:base_crop[1][1]]
 
-        sift = cv2.xfeatures2d.SIFT_create()
-        kp1, des1 = sift.detectAndCompute(img1,None)
-        kp2, des2 = sift.detectAndCompute(img2,None)
-        bf = cv2.BFMatcher()
-        matches = bf.knnMatch(des1,des2, k=2)
-        good = []
-        for m,n in matches:
-            if m.distance < accuracy*n.distance:
-                good.append(kp1[m.queryIdx].pt)
+        target = cv2.imread(template_img, cv2.IMREAD_GRAYSCALE)
+        w, h = target.shape[::-1]
+        res = cv2.matchTemplate(imgGray, target, cv2.TM_CCOEFF_NORMED)
 
-        self.func_log(0,f'result: [{len(good)}]{good}')
-        return good
+        accuracy = 0.8
+        loc = np.where(res>=accuracy)
+        print(loc)
+        for pt in zip(*loc[::-1]):
+            result.append((int(pt[0]), int(pt[1])))
+            cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2) # 결과값에 사각형을 그린다
 
-    def touch_img(self, base_img, template_img, find_index=0, accuracy=0.3, offset=(0,0)):
-        img_points = self.check_img(base_img, template_img, accuracy)
-        offset_x, offset_y = offset
-        center_x, center_y = img_points[find_index]
-        point_x = center_x + offset_x
-        point_y = center_y + offset_y
 
+        if debug == True:
+            cv2.imshow("img", img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+        self.func_log(0,f'result: [{len(result)}]{result}')
+        return result
+
+    def touch_element_img(self, Elements, template_img, Index=0, accuracy=0.8, offset=(0,0), wait=0, find_index=0):
+        '''
+            전체 사이즈
+            엘리먼트 좌표
+                - 이미지 좌표
+            
+            터치 > 엘리먼트 좌표 + 이미지 좌표
+
+        '''
+        img_points = self.check_element_img(Elements=Elements, template_img=template_img, Index=Index, accuracy=accuracy)
+        bounds = self.ElementAttribute[Index]['bounds']
         if img_points:
-            self.touch_point((point_x,point_y))
+            offset_x, offset_y = offset
+            center_x, center_y = img_points[find_index]
+            point_x = center_x + offset_x + bounds[0][0]
+            point_y = center_y + offset_y + bounds[0][1]
+
+            self.touch_point((point_x,point_y), wait=wait)
+        else:
+            self.func_log(-1,f'not find img', write_log=self.__class_log__)
+        
+
+    def touch_img(self, template_img, base_img, base_crop=[], accuracy=0.8, offset=(0,0), wait=0, find_index=0):
+        img_points = self.check_img(base_img=base_img, template_img=template_img, base_crop=base_crop, accuracy=accuracy)
+        if img_points:
+            offset_x, offset_y = offset
+            center_x, center_y = img_points[find_index]
+            point_x = center_x + offset_x
+            point_y = center_y + offset_y
+
+            self.touch_point((point_x,point_y), wait=wait)
         else:
             self.func_log(-1,f'not find img', write_log=self.__class_log__)
