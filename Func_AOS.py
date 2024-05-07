@@ -341,20 +341,25 @@ class AOS:
         for Index in range(len(ElementHandle)):
             try:
                 get_value = ElementHandle[Index].get_attribute(ElementValueType)
-                #GetValue = GetValue.decode('cp949')
-                if get_value == 'true':
-                    GetValue = True
-                elif get_value == 'false':
-                    GetValue = False
+                if get_value != None:
+                    #GetValue = GetValue.decode('cp949')
+                    if get_value == 'true':
+                        GetValue = True
+                    elif get_value == 'false':
+                        GetValue = False
+                    else:
+                        GetValue = get_value
+                    
+                    if strip_value == True:
+                        GetValue = GetValue.strip()
+
                 else:
-                    GetValue = get_value
-                
-                if strip_value == True:
-                    GetValue = GetValue.strip()
+                    if ElementValueType == 'textContent' or ElementValueType == 'text':
+                        GetValue = ElementHandle[Index].text
 
                 ElementValueList.append(GetValue)
 
-                self.log(f'FindValues > {TargetElement}[{Index}] > "{GetValue}"', write_log=self.__class_log__)
+                self.log(f'FindValues > {TargetElement}[{Index}][{ElementValueType}] > "{GetValue}"', write_log=self.__class_log__)
 
                 
             except:
@@ -565,8 +570,7 @@ class AOS:
                         
                         else:
                             get_attribute[attribute] = get_value
-                        
-                        print(get_attribute)
+                            
                     else:
                         if attribute == 'textContent' or attribute == 'text':
                             get_attribute[attribute] = ElementHandle[Index].text
