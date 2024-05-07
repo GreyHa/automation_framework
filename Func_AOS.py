@@ -62,7 +62,12 @@ class AOS:
         else:
             self.__appium_port__ = '4723'
 
-        self.__appium_host__ = f'http://{self.__appium_ip__}:{self.__appium_port__}/wd/hub'
+        if 'RemotePath' in AppiumServerInfo.keys():
+            self.RemotePath = AppiumServerInfo['port']
+        else:
+            self.RemotePath = ''
+
+        self.__appium_host__ = f'http://{self.__appium_ip__}:{self.__appium_port__}{self.RemotePath}'
 
         if 'screenshot_path' in ClassOption.keys():
             self.__screenshot_path__ = ClassOption['screenshot_path']
