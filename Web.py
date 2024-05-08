@@ -67,11 +67,11 @@ class Web(module):
         self.__after__ = self.dict_value(self.__client_info__, key='after', not_find_data=1)
 
         self.__error__ = ''
-        self.warning_list = []
+        self.all_log_list = []
         self.func_log_list = []
 
-        self.path_create(os.path.dirname(self.__log_file_path__))
-        self.path_create(os.path.dirname(self.__screenshot_path__))
+        self.path_create(self.__log_file_path__)
+        self.path_create(self.__screenshot_path__)
 
         chrome_options:webdriver.ChromeOptions = self.dict_value(self.__client_info__, key='chrome_options', not_find_data=webdriver.ChromeOptions(), not_find_error=False)
             
@@ -82,8 +82,8 @@ class Web(module):
         service = Service(executable_path=self.__driver_path__)
         self.driver = webdriver.Chrome(service=service, options=chrome_options)# service_args=["--verbose"] goog:loggingPrefs "--log-path=/qc1.txt"
         self.__debuggerAddress__ = self.driver.capabilities['goog:chromeOptions']['debuggerAddress'].split(':')
-        self.__debugger_ip__ = int(self.__debuggerAddress__[0])
-        self.__debugger_port__ = int(self.__debuggerAddress__[-1])
+        self.__debugger_ip__ = self.__debuggerAddress__[0]
+        self.__debugger_port__ = self.__debuggerAddress__[-1]
         self.Change_location(location=self.__driver_location__)
                
         self.ElementHandle = []
