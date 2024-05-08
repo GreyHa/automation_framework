@@ -734,84 +734,63 @@ class AOS(SupportModule.module):
     def touch_point(self, point=(0,0), wait=0):        
         action = self.touchaction()
         point_x, point_y = point
-
-        self.log(f'touch_point > {point}', write_log=self.__class_log__)
+        self.func_log(f'{point}')
         action.pointer_down(x=point_x,y=point_y)
-        
-        if wait > 0:
-            action.pause(wait*1000)
-
+        action.pause(wait*1000)
         action.pointer_up(x=point_x,y=point_y)
         action.release()
-        action.perform()
         time.sleep(self.__after__)
 
     def slide_point(self, point=(0,0), point2=(0,0), wait=1):
         action = self.touchaction()
         point_x, point_y = point
         point2_x, point2_y = point2
-
-        action.press(x=point_x,y=point_y)
-        action.wait(wait*1000)
+        self.func_log(f'{point} > {point2}')
+        action.pointer_down(x=point_x,y=point_y)
+        action.pause(wait*1000)
         action.move_to(x=point2_x,y=point2_y)
+        action.pointer_up(x=point_x,y=point_y)
         action.release()
-        action.perform()
         time.sleep(self.__after__)
 
-    def slide_down(self,level=3,wait=1):
+    def slide_down(self,level=3, wait=1):
         point_x = int(self.driver_location['width']/2)
         point_y = int(self.driver_location['height']/2-self.driver_location['height']/8*level)
         move_y = int(self.driver_location['height']/2+self.driver_location['height']/8*level)
         
-        action = self.touchaction()
-        action.press(x=point_x,y=point_y)
-        action.wait(wait*1000)
-        action.move_to(x=point_x,y=move_y)
-        action.release()
-        action.perform()
-        time.sleep(self.__after__)
+        point = (point_x, point_y)
+        point2 = (point_x, move_y)
+
+        self.slide_point(point=point, point2=point2, wait=wait)
 
     def slide_up(self,level=3,wait=1):
         point_x = int(self.driver_location['width']/2)
 
         point_y = int(self.driver_location['height']/2+self.driver_location['height']/8*level)
         move_y = int(self.driver_location['height']/2-self.driver_location['height']/8*level)
-        
-        action = self.touchaction()
-        action.press(x=point_x,y=point_y)
-        action.wait(wait*1000)
-        action.move_to(x=point_x,y=move_y)
-        action.release()
-        action.perform()
-        time.sleep(self.__after__)
+
+        point = (point_x, point_y)
+        point2 = (point_x, move_y)
+
+        self.slide_point(point=point, point2=point2, wait=wait)
 
     def slide_left(self,level=3, wait=1):
         point_x = int(self.driver_location['width']/2+self.driver_location['width']/8*level)
         move_x = int(self.driver_location['width']/2-self.driver_location['width']/8*level)
-
         point_y = int(self.driver_location['height']/2)
+        point = (point_x, point_y)
+        point2 = (move_x, point_y)
 
-        action = self.touchaction()
-        action.press(x=point_x,y=point_y)
-        action.wait(wait*1000)
-        action.move_to(x=move_x,y=point_y)
-        action.release()
-        action.perform()
-        time.sleep(self.__after__)
+        self.slide_point(point=point, point2=point2, wait=wait)
 
     def slide_right(self,level=3,wait=1):
         point_x = int(self.driver_location['width']/2-self.driver_location['width']/8*level)
         move_x = int(self.driver_location['width']/2+self.driver_location['width']/8*level)
-
         point_y = int(self.driver_location['height']/2)
 
-        action = self.touchaction()
-        action.press(x=point_x,y=point_y)
-        action.wait(wait*1000)
-        action.move_to(x=move_x,y=point_y)
-        action.release()
-        action.perform()
-        time.sleep(self.__after__)
+        point = (point_x, point_y)
+        point2 = (move_x, point_y)
+        self.slide_point(point=point, point2=point2, wait=wait)
     
     def slide_app_close(self, level=2):
         self.key_app_switch()
@@ -843,45 +822,6 @@ class AOS(SupportModule.module):
         result = self.check_img(template_img=template_img, base_img=base_img, base_crop=[], accuracy=accuracy, debug=debug)
         return result
 
-    def check_img(self, template_img, base_img, base_crop=[], accuracy:int=0.8, debug=False):
-        '''
-            base_crop = [(start_y,end_y), (start_x,end_x)] or [bounds[0][1]:bounds[1][1],bounds[0][0]:bounds[1][0]]
-        '''
-        if base_img:
-            img = cv2.imread(base_img)
-        else:
-            screenshot_path = self.screenshot(file_name='temp_screenshot',screenshot_path=self.__screenshot_path__)
-            img = cv2.imread(screenshot_path)
-            try:
-                os.remove(screenshot_path)
-            except:
-                pass
-        result = []
-
-        imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        if base_crop:
-            imgGray[base_crop[0][0]:base_crop[0][1], base_crop[1][0]:base_crop[1][1]]
-
-        target = cv2.imread(template_img, cv2.IMREAD_GRAYSCALE)
-        w, h = target.shape[::-1]
-        res = cv2.matchTemplate(imgGray, target, cv2.TM_CCOEFF_NORMED)
-
-        accuracy = 0.8
-        loc = np.where(res>=accuracy)
-        print(loc)
-        for pt in zip(*loc[::-1]):
-            result.append((int(pt[0]), int(pt[1])))
-            cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2) # 결과값에 사각형을 그린다
-
-
-        if debug == True:
-            cv2.imshow("img", img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-
-        self.func_log(0,f'result: [{len(result)}]{result}')
-        return result
-
     def touch_element_img(self, Elements, template_img, Index=0, accuracy=0.8, offset=(0,0), wait=0, find_index=0):
         '''
             전체 사이즈
@@ -902,7 +842,6 @@ class AOS(SupportModule.module):
             self.touch_point((point_x,point_y), wait=wait)
         else:
             self.func_log(-1,f'not find img', write_log=self.__class_log__)
-        
 
     def touch_img(self, template_img, base_img, base_crop=[], accuracy=0.8, offset=(0,0), wait=0, find_index=0):
         img_points = self.check_img(base_img=base_img, template_img=template_img, base_crop=base_crop, accuracy=accuracy)
