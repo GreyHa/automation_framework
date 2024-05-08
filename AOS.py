@@ -2,12 +2,10 @@
 #!/usr/bin/env python3
 #https://selenium-python.readthedocs.io/api.html#selenium.webdriver.common.touch_actions.TouchActions.scroll
 
-import time, os, base64, sys, inspect, traceback
+import time, os, base64, sys
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
 import SupportModule
-from cv2 import cv2
-import numpy as np
 
 __platform__ = 'AOS'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
@@ -827,121 +825,6 @@ class AOS(SupportModule.module):
 
     def adb_app_start(self, app_id):
         self.adb_shell(command='monkey',args=f'-p {app_id} -c android.intent.category.LAUNCHER 1')
-
-    def compare(self, target1, target2, compare_type='==', pass_type=0, fail_type=-1):
-        compare_text = f'"{target1}" {compare_type} "{target2}"'
-        
-        compare_list = ['!=', '==', '>=', '<=', '>', '<', 'in', 'not in']
-        if compare_type in compare_list:
-            if compare_type == '!=' and target1 != target2:
-                return pass_type, compare_text
-
-            elif compare_type == '==' and target1 == target2:
-                return pass_type, compare_text
-
-            elif compare_type == '>=' and target1 >= target2:
-                return pass_type, compare_text
-
-            elif compare_type == '<=' and target1 <= target2:
-                return pass_type, compare_text
-
-            elif compare_type == '>' and target1 > target2:
-                return pass_type, compare_text
-
-            elif compare_type == '<' and target1 < target2:
-                return pass_type, compare_text
-
-            elif compare_type == 'in' and target1 in target2:
-                return pass_type, compare_text
-
-            elif compare_type == 'not in' and target1 not in target2:
-                return pass_type, compare_text
-            else:
-                return fail_type, f'fail > ({compare_text})'
-        else:
-            raise Exception(f'compare_type: "{compare_type}" not in compare_list: {compare_list}')
-
-    def func_log(self, log_type:int, log_text:str=''):
-        '''
-            log_type : 0 > by pass
-            log_tpye : 1 > start
-            log_tpye : 2 > check
-            log_tpye : 3 > end
-
-            log_tpye : -2 > Warning
-            log_tpye : -1 > Error
-        '''
-        func_name = inspect.stack()[1][3]
-
-        if log_type == 1:
-            if log_text:
-                text = f'[==== {func_name} start > {log_text} ====]'
-            else:
-                text = f'[==== {func_name} start ====]'
-
-        elif log_type == 2:
-            if log_text:
-                text = f'[==== {func_name} check > {log_text} ====]'
-            else:
-                text = f'[==== {func_name} check ====]'
-        
-        elif log_type == 3:
-            if log_text:
-                text = f'[==== {func_name} end > {log_text} ====]'
-            else:
-                text = f'[==== {func_name} end ====]'
-        
-        elif log_type == -2:
-            if log_text:
-                text = f'Warning : {func_name} > {log_text}'
-            else:
-                text = f'Warning : {func_name}'
-
-        elif log_type == -1:
-            if log_text:
-                text = f'Error : {func_name} > {log_text}'
-            else:
-                text = f'Error : {func_name}'
-        else:
-            text = f'[{func_name}] {log_text}'
-
-        self.func_log_list.append(text)
-        if log_type == 3:
-            self.func_log_list = []
-        self.log(text,write_log=self.__class_log__)
-        return log_type
-
-    def compare_log(self, target1, target2, compare_type:str='==', pass_type=0, fail_type=-1, log_text:str=''):
-        '''
-            pass_type, fail_type
-            log_type : 0 > by pass < pass_type
-            log_tpye : 1 > start
-            log_tpye : 2 > check
-            log_tpye : 3 > end
-            log_tpye : -2 > Warning
-            log_tpye : -1 > Error < fail_type
-
-            return log_type
-        '''
-        log_type, log_text2 = self.compare(target1,target2,compare_type=compare_type,pass_type=pass_type,fail_type=fail_type)
-        
-        if log_text:
-            text = f'{log_text} : {log_text2}'
-        else:
-            text = log_text2
-
-        self.func_log(log_type,text)
-
-        return log_type
-
-    def sleep(self,second=0):
-        if second == 0:
-            time.sleep(self.__after__)
-            self.log(f'sleep: {self.__after__}')
-        
-        else:
-            time.sleep(second)
-            self.log(f'sleep: {second}')
 
     def hide_keyboard(self):
         self.driver.hide_keyboard()

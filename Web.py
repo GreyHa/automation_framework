@@ -616,7 +616,7 @@ class Web(SupportModule.module):
         self.ElementAttribute = ElementAttribute
         return self
     
-    def screenshot(self,file_name=None, screenshot_path=None):
+    def screenshot(self, file_name=None, screenshot_path=None):
 
         if screenshot_path:
             __screenshot_path__ = screenshot_path
@@ -638,36 +638,3 @@ class Web(SupportModule.module):
 
     def action(self):
         return  ActionChains(self.driver)
-
-    def compare(self, target1, target2, compare_type='==', pass_type=0, fail_type=-1):
-        compare_text = f'"{target1}" {compare_type} "{target2}"'
-        
-        compare_list = ['!=', '==', '>=', '<=', '>', '<', 'in', 'not in']
-        if compare_type in compare_list:
-            if compare_type == '!=' and target1 != target2:
-                return pass_type, compare_text
-
-            elif compare_type == '==' and target1 == target2:
-                return pass_type, compare_text
-
-            elif compare_type == '>=' and target1 >= target2:
-                return pass_type, compare_text
-
-            elif compare_type == '<=' and target1 <= target2:
-                return pass_type, compare_text
-
-            elif compare_type == '>' and target1 > target2:
-                return pass_type, compare_text
-
-            elif compare_type == '<' and target1 < target2:
-                return pass_type, compare_text
-
-            elif compare_type == 'in' and target1 in target2:
-                return pass_type, compare_text
-
-            elif compare_type == 'not in' and target1 not in target2:
-                return pass_type, compare_text
-            else:
-                return fail_type, f'fail > ({compare_text})'
-        else:
-            raise Exception(f'compare_type: "{compare_type}" not in compare_list: {compare_list}')
