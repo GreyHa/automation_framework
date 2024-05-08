@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 import time, os, sys, hashlib, inspect, traceback, base64
 from pathlib import Path
-import pyautogui, np
+import pyautogui, numpy, cv2
 
 class module:
 
@@ -193,8 +193,8 @@ class module:
             self.log(f'Error\ncheck_hash: "{check_hash}"\ntarget_hash: "{target_hash}"', -1)
 
     def check_img(self, img_path, img_path2, accuracy:int=0.3):
-        img_array1 = np.fromfile(Path(img_path), np.uint8)
-        img_array2 = np.fromfile(Path(img_path2), np.uint8)
+        img_array1 = numpy.fromfile(Path(img_path), numpy.uint8)
+        img_array2 = numpy.fromfile(Path(img_path2), numpy.uint8)
 
         img1 = cv2.imdecode(img_array1,0)
         img2 = cv2.imdecode(img_array2,0)

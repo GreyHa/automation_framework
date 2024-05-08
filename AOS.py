@@ -5,7 +5,7 @@
 import time, os, base64, sys, inspect, traceback
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
-from ModuleCore import core
+import SupportModule
 from cv2 import cv2
 import numpy as np
 
@@ -13,7 +13,7 @@ __platform__ = 'AOS'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
 __time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
-class AOS(core):
+class AOS(SupportModule.module):
     def __init__(self, DeviceInfo, AppiumServerInfo={'ip':'127.0.0.1','port':'4723'}, Delay={'retry':5, 'after':1}, ClassOption={}):
         '''
             DeviceInfo = desired_capabilities

@@ -3,11 +3,10 @@
 #https://fenderist.tistory.com/168
 #https://selenium-python.readthedocs.io/api.html#module-selenium.webdriver.support.expected_conditions
 
-import time, os, sys, inspect, traceback
-from SupportModule import module
+import time, os, sys
+import SupportModule
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.service import Service
@@ -16,7 +15,7 @@ import selenium.common.exceptions as selenium_exception
 # chrome.exe --remote-debugging-port=9223 --user-data-dir=c:\test
 # /Applications//Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9223 --user-data-dir="~/Chrome/Chrome-user01"
 
-class Web(module):
+class Web(SupportModule.module):
     def __init__(self, clientinfo):
         '''
             clientinfo =
