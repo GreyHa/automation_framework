@@ -8,6 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
+from appium.options.android import UiAutomator2Options
 from .SupportModule import module
 
 __platform__ = 'AOS'
@@ -44,7 +45,6 @@ class AOS(module):
         self.__start_time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
         self.__client_info__:dict = clientinfo
-        self.__driver_path__:str = self.__client_info__['executable_path']
         self.__device__:dict = self.__client_info__['device']
 
         self.__appium_ip__ = self.dict_value(self.__client_info__, key='ip', not_find_data='127.0.0.1')
@@ -66,10 +66,10 @@ class AOS(module):
         self.__appium_host__ = f'http://{self.__appium_ip__}:{self.__appium_port__}{RemotePath}'
 
         self.__error__ = ''
-        self.warning_list = []   
+        self.all_log_list = []   
         self.func_log_list = []
-
-        self.driver = webdriver.Remote(command_executor=self.__appium_host__, options=self.__device__)
+        capabilities_options = UiAutomator2Options().load_capabilities(self.__device__)
+        self.driver = webdriver.Remote(command_executor=self.__appium_host__, options=capabilities_options)
 
         self.driver_location = self.driver.get_window_size()
         self.driver_capabilities = self.driver.capabilities
