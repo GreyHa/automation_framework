@@ -8,36 +8,30 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
-import SupportModule
+from .SupportModule import module
 
 __platform__ = 'AOS'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
 __time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
-class AOS(SupportModule.module):
-    def __init__(self, DeviceInfo, AppiumServerInfo={'ip':'127.0.0.1','port':'4723'}, Delay={'retry':5, 'after':1}, ClassOption={}):
+class AOS(module):
+    def __init__(self, clientinfo):
         '''
-            DeviceInfo = desired_capabilities
+            clientinfo = desired_capabilities
             {
-                'uuid': uuid,
-                'newCommandTimeout' : timeout second
-                ...
-            }
-
-            AppiumServerInfo =
-            {
+                'device' : {
+                    *'automationName': 'UiAutomator2'
+                    *'platformName': 'Android'
+                    *'udid': udid,
+                    'newCommandTimeout' : timeout second
+                    'platformVersion': 11.0,
+                    'deviceName': 'Pixel_2_API_30'
+                    'enableMultiWindows': bool
+                }
                 'ip': appium ip,
                 'port' : appium port
-            }
-
-            Delay =
-            {
                 'retry' : if fail retry count,
                 'after' : action delay second
-            }
-
-            ClassOption =
-            {
                 'screenshot_path' = save folder path,
                 'log_file_path' = log file full path,
                 'class_name' = class name > log > "{time} {class_name} {log_text}",
@@ -45,76 +39,37 @@ class AOS(SupportModule.module):
                 'class_log' = True, class in func log write
             }
         '''
-        self.__device_info__ = DeviceInfo
-        self.__class_option__ = ClassOption
+        self.__platform__ = 'AOS'
+        self.__script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
+        self.__start_time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
-        if 'ip' in AppiumServerInfo.keys():
-            self.__appium_ip__ = AppiumServerInfo['ip']
-        else:
-            self.__appium_ip__ = '127.0.0.1'
+        self.__client_info__:dict = clientinfo
+        self.__driver_path__:str = self.__client_info__['executable_path']
+        self.__device__:dict = self.__client_info__['device']
 
-        if 'port' in AppiumServerInfo.keys():
-            self.__appium_port__ = AppiumServerInfo['port']
-        else:
-            self.__appium_port__ = '4723'
+        self.__appium_ip__ = self.dict_value(self.__client_info__, key='ip', not_find_data='127.0.0.1')
+        self.__appium_port__ = self.dict_value(self.__client_info__, key='port', not_find_data='4723')
 
-        if 'RemotePath' in AppiumServerInfo.keys():
-            self.RemotePath = AppiumServerInfo['port']
-        else:
-            self.RemotePath = ''
+        self.__screenshot_path__ = self.dict_value(self.__client_info__, key='screenshot_path', not_find_data=f'{self.__script_path__}/screenshot/{self.__start_time__}')
+        self.__log_file_path__ = self.dict_value(self.__client_info__, key='log_file_path', not_find_data=f'{self.__script_path__}/log/{self.__start_time__}.txt')
+        
+        self.__class_name__ = self.dict_value(self.__client_info__, key='class_name', not_find_data=self.__platform__)
+        self.__element_type__ = self.dict_value(self.__client_info__, key='element_type', not_find_data='id')
+        self.__class_log__ = self.dict_value(self.__client_info__, key='class_log', not_find_data=True)
+        self.__print_log__ = self.dict_value(self.__client_info__, key='print_log', not_find_data=True)        
+        self.__log_collection__ = self.dict_value(self.__client_info__, key='log collection', not_find_data=True)
 
-        self.__appium_host__ = f'http://{self.__appium_ip__}:{self.__appium_port__}{self.RemotePath}'
+        self.__retry__ = self.dict_value(self.__client_info__, key='retry', not_find_data=5)
+        self.__after__ = self.dict_value(self.__client_info__, key='after', not_find_data=1)
 
-        if 'screenshot_path' in ClassOption.keys():
-            self.__screenshot_path__ = ClassOption['screenshot_path']
-        else:
-            self.__screenshot_path__ = f'{__script_path__}/screenshot/{__time__}'
-
-        if 'log_file_path' in ClassOption.keys():
-            self.__log_file_path__ = ClassOption['log_file_path']
-        else:
-            self.__log_file_path__ = f'{__script_path__}/log/{__time__}.txt'
-
-        if 'class_name' in ClassOption.keys():
-            self.__class_name__ = ClassOption['class_name']
-        else:
-            self.__class_name__ = __platform__
-
-        if 'element_type' in ClassOption.keys():
-            self.__element_type__ = ClassOption['element_type']
-        else:
-            self.__element_type__ = 'id'
-
-        if 'class_log' in ClassOption.keys():
-            self.__class_log__ = ClassOption['class_log']
-        else:
-            self.__class_log__ = True
-
-        if 'print_log' in ClassOption.keys():
-            self.__print_log__ = ClassOption['print_log']
-        else:
-            self.__print_log__ = True
-
-        if 'warning_collection' in ClassOption.keys():
-            self.__warning_collection__ = ClassOption['warning_collection']
-        else:
-            self.__warning_collection__ = True
-
-        if 'retry' in Delay:
-            self.__retry__ = Delay['retry']
-        else:
-            self.__retry__ = 5
-
-        if 'after' in Delay:
-            self.__after__ = Delay['after']
-        else:
-            self.__after__ = 1
+        RemotePath = self.dict_value(self.__client_info__, key='RemotePath', not_find_data='')
+        self.__appium_host__ = f'http://{self.__appium_ip__}:{self.__appium_port__}{RemotePath}'
 
         self.__error__ = ''
         self.warning_list = []   
         self.func_log_list = []
 
-        self.driver = webdriver.Remote(command_executor=self.__appium_host__, desired_capabilities=self.__device_info__)
+        self.driver = webdriver.Remote(command_executor=self.__appium_host__, options=self.__device__)
 
         self.driver_location = self.driver.get_window_size()
         self.driver_capabilities = self.driver.capabilities
