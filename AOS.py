@@ -5,6 +5,9 @@
 import time, os, base64, sys
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.actions import interaction
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
 import SupportModule
 
 __platform__ = 'AOS'
@@ -416,7 +419,7 @@ class AOS(SupportModule.module):
                     point_x = center_x + offset_x
                     point_y = center_y + offset_y
 
-                    action = TouchAction(self.driver)
+                    action = self.touchaction(self.driver)
                     action.press(x=point_x,y=point_y)
                     action.wait(1000)
                     action.release()
@@ -687,8 +690,11 @@ class AOS(SupportModule.module):
 
 
     def touchaction(self):
-        return TouchAction(self.driver)
-
+        #https://github.com/appium/python-client/blob/7dbf4f2f7ce43f60eded19fa247bb2177b65bafd/README.md#multiactiontouchaction-to-w3c-actions
+        action = self.action()
+        action.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+        return action.w3c_actions.pointer_action
+    
     def action(self):
         return ActionChains(self.driver)
 
@@ -730,9 +736,12 @@ class AOS(SupportModule.module):
         point_x, point_y = point
 
         self.log(f'touch_point > {point}', write_log=self.__class_log__)
-        action.press(x=point_x,y=point_y)
+        action.pointer_down(x=point_x,y=point_y)
+        
         if wait > 0:
-            action.wait(wait*1000)
+            action.pause(wait*1000)
+
+        action.pointer_up(x=point_x,y=point_y)
         action.release()
         action.perform()
         time.sleep(self.__after__)
