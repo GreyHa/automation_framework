@@ -3,34 +3,23 @@
 #https://fenderist.tistory.com/168
 #https://selenium-python.readthedocs.io/api.html#module-selenium.webdriver.support.expected_conditions
 
-import time, os, sys, inspect
+import time, os, sys, inspect, traceback
+from SupportModule import module
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.action_chains import ActionChains
-import selenium.common.exceptions as selenium_exception
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.service import Service
+import selenium.common.exceptions as selenium_exception
 
-#from Func_Common import NowTime
-#from Func_Common import find_list_in_dict_key
-#from Func_Common import path_create
-
-__platform__ = 'Web'
-__script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
-__time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
-
-#debug mode chrome
-# windows
 # chrome.exe --remote-debugging-port=9223 --user-data-dir=c:\test
+# /Applications//Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9223 --user-data-dir="~/Chrome/Chrome-user01"
 
-# mac
-# /Applications//Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9223 --user-data-dir="/Users/grey/Chrome-user01"
-
-class Web:
-    def __init__(self, DriverInfo, Delay={'retry':5, 'after':1}, ClassOption={}, WinDriver=None):
+class Web(module):
+    def __init__(self, clientinfo):
         '''
-            DriverInfo =
+            clientinfo =
             {
                 'executable_path' : chromedriver path,
                 'ip': None or ip,
@@ -43,17 +32,9 @@ class Web:
                     'y':window position or None
                 },
                 'chrome_options' : chrome_options,
-                'desired_capabilities' : desired_capabilities
-            }
-
-            Delay =
-            {
+                'desired_capabilities' : desired_capabilities,
                 'retry' : if fail retry count,
-                'after' : action delay second
-            }
-
-            ClassOption =
-            {
+                'after' : action delay second,
                 'element_highlight' = bool,
                 'screenshot_path' = save folder path,
                 'log_file_path' = log file full path,
@@ -61,129 +42,54 @@ class Web:
                 'element_type' = css selector, xpath etc...
                 'class_log' = True, class in func log write
             }
-
-            WinDriver = None or Win modul class
         '''
-        self.__driver_info__ = DriverInfo
-        self.__class_option__ = ClassOption
+        
+        self.__platform__ = 'Web'
+        self.__script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
+        self.__start_time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
-        self.__driver_path__ = DriverInfo['executable_path']
+        self.__client_info__:dict = clientinfo
+        self.__driver_path__:str = self.__client_info__['executable_path']
 
-        if 'ip' in DriverInfo.keys():
-            self.__driver_ip__ = DriverInfo['ip']
-        else:
-            self.__driver_ip__ = None
+        self.__driver_ip__ = self.dict_value(self.__client_info__, key='ip', not_find_data=None)
+        self.__driver_port__ = self.dict_value(self.__client_info__, key='port', not_find_data=None)
+        self.__driver_location__ = self.dict_value(self.__client_info__, key='location', not_find_data=None)
+        self.__screenshot_path__ = self.dict_value(self.__client_info__, key='screenshot_path', not_find_data=f'{self.__script_path__}/screenshot/{self.__start_time__}')
+        self.__log_file_path__ = self.dict_value(self.__client_info__, key='log_file_path', not_find_data=f'{self.__script_path__}/log/{self.__start_time__}.txt')
+        
+        self.__class_name__ = self.dict_value(self.__client_info__, key='class_name', not_find_data=self.__platform__)
+        self.__element_type__ = self.dict_value(self.__client_info__, key='element_type', not_find_data='css selector')
+        self.__class_log__ = self.dict_value(self.__client_info__, key='class_log', not_find_data=True)
+        self.__print_log__ = self.dict_value(self.__client_info__, key='print_log', not_find_data=True)        
+        self.__log_collection__ = self.dict_value(self.__client_info__, key='log collection', not_find_data=True)
 
-        if 'port' in DriverInfo.keys():
-            self.__driver_port__ = DriverInfo['port']
-        else:
-            self.__driver_port__ = None
-
-        if 'location' in DriverInfo.keys():
-            self.__driver_location__ = DriverInfo['location']
-        else:
-            self.__driver_location__ = None
-
-        if 'chrome_options' in DriverInfo.keys():
-            chrome_options = DriverInfo['chrome_options']
-        else:
-            chrome_options = webdriver.ChromeOptions()
-            #chrome_options.add_experimental_option('prefs',{"profile.default_content_setting_values.notifications" : 2})
-
-        if 'desired_capabilities' in DriverInfo.keys():
-            desired_capabilities = DriverInfo['desired_capabilities']
-        else:
-            desired_capabilities = DesiredCapabilities.CHROME
-            desired_capabilities['goog:loggingPrefs'] = {"browser": "ALL", 'performance': 'ALL'}
-
-        if 'screenshot_path' in ClassOption.keys():
-            self.__screenshot_path__ = ClassOption['screenshot_path']
-        else:
-            self.__screenshot_path__ = f'{__script_path__}/screenshot/{__time__}'
-
-        if 'log_file_path' in ClassOption.keys():
-            self.__log_file_path__ = ClassOption['log_file_path']
-        else:
-            self.__log_file_path__ = f'{__script_path__}/log/{__time__}.txt'
-
-        if 'class_name' in ClassOption.keys():
-            self.__class_name__ = ClassOption['class_name']
-        else:
-            self.__class_name__ = __platform__
-
-        if 'element_type' in ClassOption.keys():
-            self.__element_type__ = ClassOption['element_type']
-        else:
-            self.__element_type__ = 'css selector'
-
-        if 'element_highlight' in ClassOption.keys():
-            self.__element_highlight__ = ClassOption['element_highlight']
-        else:
-            self.__element_highlight__ = False
-
-        if 'class_log' in ClassOption.keys():
-            self.__class_log__ = ClassOption['class_log']
-        else:
-            self.__class_log__ = True
-
-        if 'warning_collection' in ClassOption.keys():
-            self.__warning_collection__ = ClassOption['warning_collection']
-        else:
-            self.__warning_collection__ = True
-
-        if 'retry' in Delay:
-            self.__retry__ = Delay['retry']
-        else:
-            self.__retry__ = 5
-
-        if 'after' in Delay:
-            self.__after__ = Delay['after']
-        else:
-            self.__after__ = 1
+        self.__retry__ = self.dict_value(self.__client_info__, key='retry', not_find_data=5)
+        self.__after__ = self.dict_value(self.__client_info__, key='after', not_find_data=1)
 
         self.__error__ = ''
         self.warning_list = []
-        
+        self.func_log_list = []
+
         self.path_create(os.path.dirname(self.__log_file_path__))
         self.path_create(os.path.dirname(self.__screenshot_path__))
-        #os.system(f'start cmd /c python -m http.server --bind {Config.WebserverIP} {Config.WebserverPort} --directory {Config.BASE_DIR}')
-        #https://chromedriver.chromium.org/capabilities
 
+        chrome_options:webdriver.ChromeOptions = self.dict_value(self.__client_info__, key='chrome_options', not_find_data=webdriver.ChromeOptions(), not_find_error=False)
+            
         if self.__driver_ip__ != None:
-            print(f"{self.__driver_ip__}:{self.__driver_port__}")
             chrome_options.add_experimental_option("debuggerAddress", f"{self.__driver_ip__}:{self.__driver_port__}")
             chrome_options.set_capability('loggingPrefs',{"browser": "ALL", 'performance': 'ALL'})
+        
         service = Service(executable_path=self.__driver_path__)
         self.driver = webdriver.Chrome(service=service, options=chrome_options)# service_args=["--verbose"] goog:loggingPrefs "--log-path=/qc1.txt"
-        
-        self.capabilities = self.driver.capabilities
-        debuggerAddress = self.capabilities['goog:chromeOptions']['debuggerAddress'].split(':')
-        
-        self.driver_port = int(debuggerAddress[-1])
-        if WinDriver:
-            origin_title = self.driver.title
-            self.driver.execute_script("document.title = 'find handle driver'")
-            windows_list = WinDriver.GetAttribute({'Type':'xpath','Target':'/*/*'},attribute_list=['Name','NativeWindowHandle']).ElementAttribute
-            self.windows_attribute = self.find_key_in_dict_list(dict_list=windows_list,key_name='Name',key_value='find handle driver - Chrome')
-            if self.windows_attribute:
-                self.WindowsHandle = hex(int(self.windows_attribute['NativeWindowHandle']))
-            else:
-                self.log('error : WindowsHandle > None', write_log=self.__class_log__)
-            self.driver.execute_script(f"document.title = '{origin_title}'")
-        else:
-             self.WindowsHandle = None
-        #if Config.RunOS == 'win.exe':
-        #    self.process_info = find_process_info(key_name='local_port',key_value=self.driver_port)
-        #else:
-        #    process_info = None
-
+        self.__debuggerAddress__ = self.driver.capabilities['goog:chromeOptions']['debuggerAddress'].split(':')
+        self.__debugger_ip__ = int(self.__debuggerAddress__[0])
+        self.__debugger_port__ = int(self.__debuggerAddress__[-1])
         self.Change_location(location=self.__driver_location__)
                
         self.ElementHandle = []
         self.ElementIndex = None
         self.ElementValue = None
         self.ElementValueType = None
-
         self.ElementValueList = []
         self.ElementAttribute = []
         self.ElementDisplay = False
@@ -280,53 +186,6 @@ class Web:
         else:
             self.ElementValueType = ValueType
 
-    def now_time(self, return_type='text'):
-        if return_type.lower() == 'file':
-            return time.strftime(f'%Y%m%d_%H%M%S',time.localtime(time.time()))
-        elif return_type.lower() == 'text':
-            return time.strftime(f'%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-
-    def find_key_in_dict_list(self, dict_list:list, key_name, key_value):
-        for target_dict in dict_list:
-            key_list = target_dict.keys()
-            if key_name in key_list:
-                find_key_value = target_dict[key_name]
-                if key_value == find_key_value:
-                    return target_dict
-        return None
-
-    def path_create(self, path):
-        if not(os.path.isdir(path)):
-            try:
-                os.makedirs(os.path.join(path))
-            except:
-                print(sys.exc_info())
-
-    def log(self, log_text, write_log=True, print_log:bool=True):
-        if self.__warning_collection__ == True:
-            if str(log_text)[0:7].lower() == 'warning':
-                self.warning_list.append(log_text)
-        
-        if str(log_text)[0:5].lower() == 'error':
-            self.__error__ = f'[{self.__class_name__}]\t{str(log_text)}'
-            log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
-        else:
-            log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
-        
-        if print_log == True:
-            print(log_write, end='')
-
-        if write_log == True:
-            try:
-                log_file = open(self.__log_file_path__, "a", encoding="utf-16")
-                log_file.write(f'{log_write}')
-                log_file.close()
-            except:
-                print(sys.exc_info())
-
-        if str(log_text)[0:5].lower() == 'error':
-            raise Exception(f'{self.__error__}')
-            
     def Change_location(self, location):
         if location:
             key_list = location.keys()         
@@ -390,18 +249,11 @@ class Web:
                 FindResult = self.driver.find_elements(ElementType, ElementTarget)
             except:
                 self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]\n{sys.exc_info()}', write_log=self.__class_log__)
+            
             if len(FindResult) == 0:
                 self.log(f'FindElements > Not Find > {TargetElement}', write_log=self.__class_log__)
                 FindResult = []
-            else:
-                if len(FindResult) >= 6:
-                    for Index in range(0,6):
-                        if self.__element_highlight__ == True:
-                            self.highlight(FindResult[Index])
-                else:
-                    for Index in range(0,len(FindResult)):
-                        if self.__element_highlight__ == True:
-                            self.highlight(FindResult[Index])
+
             self.ElementHandle = FindResult
             return self
         else:
@@ -451,7 +303,7 @@ class Web:
             self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
             return self
 
-    def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, retry_count:int=-1):
+    def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, strip_value:bool=False, retry_count:int=-1):
         """
             찾은 Element의 구성요소 값을 찾아서 ElementValueList에 갱신
             만약 ElementValueList에 Value값이 존재 한다면 ElementIndex에 갱신
@@ -480,6 +332,10 @@ class Web:
                             GetValue = ElementHandle[Index].is_enabled()
                 else:
                     GetValue = ElementHandle[Index].text
+                    
+                if strip_value == True:
+                    GetValue = GetValue.strip()
+
                 ElementValueList.append(GetValue)
             except:
                 self.log(f'FindValues Error > {TargetElement}[{Index}]\n{sys.exc_info()}', write_log=self.__class_log__)
@@ -524,7 +380,7 @@ class Web:
                 self.log(f'DisplayElement Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
         self.log(f'Error : DisplayElement > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
 
-    def Click(self, Elements=None, Index=None, auto_scroll:bool=True, retry_count:int=-1):
+    def Click(self, Elements=None, Index=None, auto_scroll:bool=True, offset=(0,0), retry_count:int=-1):
         """
             찾은 Elements에서 Index 번째의 Element에 마우스 오버 및 클릭
         """
@@ -532,7 +388,8 @@ class Web:
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
         TargetElement = self.ElementHandle
-
+        offset_x, offset_y = offset 
+        
         self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
@@ -550,23 +407,29 @@ class Web:
             try:
                 #https://stackoverflow.com/questions/11908249/debugging-element-is-not-clickable-at-point-error
                 #일부 Elemet 클릭시 마우스 오버 동작이 필요한 경우가 있습니다.
-                ActionChains(self.driver).move_to_element(ElementHandle).perform()
-                try:
-                    ElementHandle.click()
-                except selenium_exception.ElementClickInterceptedException:
-                        ElementHandle.send_keys(Keys.ENTER)
-                except:
-                        self.log(f'Error > {sys.exc_info()}', write_log=self.__class_log__)
+                if offset_x == 0 and offset_y == 0:
+                    ActionChains(self.driver).move_to_element(ElementHandle).perform()
 
-                self.log(f'Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                    try:
+                        ElementHandle.click()
+                    except selenium_exception.ElementClickInterceptedException:
+                            ElementHandle.send_keys(Keys.ENTER)
+                    except:
+                            self.log(f'Error > {sys.exc_info()}', write_log=self.__class_log__)
+
+                    self.log(f'Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+                else:
+                    ActionChains(self.driver).move_to_element(ElementHandle).move_by_offset(offset_x, offset_y).click().perform()
+                    self.log(f'Click[{offset_x},{offset_y}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+
                 return self
             except:
                 self.log(f'Click Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
         self.log(f'Error : Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
 
-    def Select(self, Elements=None, Value=None, Index=None, auto_scroll:bool=True, retry_count:int=-1):
+    def Select(self, Elements=None, Value=None, Index=None, retry_count:int=-1):
         """
-            찾은 Elements에서 Index 번째의 Element에 마우스 오버 및 클릭
+            찾은 Elements에서 Index 번째의 Element에 Value를 Select
         """
         self.__ElementIndex__(Elements,Index)
         self.__ElementHandle__(Elements)
@@ -733,8 +596,6 @@ class Web:
         """
         self.__ElementHandle__(Elements)
         TargetElement = self.ElementHandle
-        
-
         self.WaitElement(TargetElement,none_error=True, retry_count=retry_count)
         ElementAttribute = []
         ElementHandle = self.ElementHandle
@@ -755,22 +616,6 @@ class Web:
         self.log(f'GetAttribute > {TargetElement} > {ElementAttribute}', write_log=self.__class_log__)
         self.ElementAttribute = ElementAttribute
         return self
-
-    def highlight(self, element):
-        '''
-            Highlights (blinks) a Selenium Webdriver element
-        '''
-        driver = element._parent
-        def apply_style(s):
-            driver.execute_script("arguments[0].setAttribute('style', arguments[1]);",
-                                element, s)
-        try:
-            original_style = element.get_attribute('style')
-            apply_style("background: yellow; border: 2px solid red;")
-            time.sleep(0.2)
-            apply_style(original_style)
-        except:
-            self.log(f'Error : highlight\n{sys.exc_info()}', write_log=self.__class_log__)
     
     def screenshot(self,file_name=None, screenshot_path=None):
 
@@ -827,75 +672,3 @@ class Web:
                 return fail_type, f'fail > ({compare_text})'
         else:
             raise Exception(f'compare_type: "{compare_type}" not in compare_list: {compare_list}')
-
-    def func_log(self, log_type:int, log_text:str=''):
-        '''
-            log_type : 0 > by pass
-            log_tpye : 1 > start
-            log_tpye : 2 > check
-            log_tpye : 3 > end
-
-            log_tpye : -2 > Warning
-            log_tpye : -1 > Error
-        '''
-        func_name = inspect.stack()[1][3]
-
-        if log_type == 1:
-            if log_text:
-                text = f'[==== {func_name} start > {log_text} ====]'
-            else:
-                text = f'[==== {func_name} start ====]'
-
-        elif log_type == 2:
-            if log_text:
-                text = f'[==== {func_name} check > {log_text} ====]'
-            else:
-                text = f'[==== {func_name} check ====]'
-        
-        elif log_type == 3:
-            if log_text:
-                text = f'[==== {func_name} end > {log_text} ====]'
-            else:
-                text = f'[==== {func_name} end ====]'
-            
-            self.warning_list = [] #reset
-        
-        elif log_type == -2:
-            if log_text:
-                text = f'Warning : {func_name} > {log_text}'
-            else:
-                text = f'Warning : {func_name}'
-
-        elif log_type == -1:
-            if log_text:
-                text = f'Error : {func_name} > {log_text}'
-            else:
-                text = f'Error : {func_name}'
-        else:
-            text = f'[{func_name}] {log_text}'
-
-        self.log(text,write_log=self.__class_log__)
-        return log_type
-
-    def compare_log(self, target1, target2, compare_type:str='==', pass_type=0, fail_type=-1, log_text:str=''):
-        '''
-            pass_type, fail_type
-            log_type : 0 > by pass < pass_type
-            log_tpye : 1 > start
-            log_tpye : 2 > check
-            log_tpye : 3 > end
-            log_tpye : -2 > Warning
-            log_tpye : -1 > Error < fail_type
-
-            return log_type
-        '''
-        log_type, log_text2 = self.compare(target1,target2,compare_type=compare_type,pass_type=pass_type,fail_type=fail_type)
-        
-        if log_text:
-            text = f'{log_text} : {log_text2}'
-        else:
-            text = log_text2
-
-        self.func_log(log_type,text)
-
-        return log_type

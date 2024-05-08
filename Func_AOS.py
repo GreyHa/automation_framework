@@ -5,20 +5,15 @@
 import time, os, base64, sys, inspect, traceback
 from appium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
-from appium.webdriver.common.touch_action import TouchAction
-from selenium.webdriver.common.keys import Keys
+from ModuleCore import core
 from cv2 import cv2
-from pathlib import Path
 import numpy as np
-
-#from Func_Common import NowTime
-#from Func_Common import path_create
 
 __platform__ = 'AOS'
 __script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
 __time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
 
-class AOS:
+class AOS(core):
     def __init__(self, DeviceInfo, AppiumServerInfo={'ip':'127.0.0.1','port':'4723'}, Delay={'retry':5, 'after':1}, ClassOption={}):
         '''
             DeviceInfo = desired_capabilities
@@ -228,55 +223,6 @@ class AOS:
         else:
             self.ElementValueType = ValueType
 
-    def now_time(self, return_type='text'):
-        if return_type.lower() == 'file':
-            return time.strftime(f'%Y%m%d_%H%M%S',time.localtime(time.time()))
-        elif return_type.lower() == 'text':
-            return time.strftime(f'%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
-
-    def find_key_in_dict_list(self, dict_list:list, key_name, key_value):
-        for target_dict in dict_list:
-            key_list = target_dict.keys()
-            if key_name in key_list:
-                find_key_value = target_dict[key_name]
-                if key_value == find_key_value:
-                    return target_dict
-        return None
-
-    def path_create(self, path):
-        if not(os.path.isdir(path)):
-            try:
-                os.makedirs(os.path.join(path))
-            except:
-                print(sys.exc_info())
-
-    def log(self, log_text, write_log:bool=True):
-        if self.__warning_collection__ == True:
-            if str(log_text)[0:7].lower() == 'warning':
-                self.warning_list.append(log_text)
-        
-        if str(log_text)[0:5].lower() == 'error':
-            self.__error__ = f'[{self.__class_name__}]\t{str(log_text)}'
-            log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
-        else:
-            log_write = f'{self.now_time()}\t[{self.__class_name__}]\t{str(log_text)}\n'
-        
-        if self.__print_log__ == True:
-            try:
-                print(log_write, end='')
-            except:
-                print(traceback.format_exc())
-
-        if write_log == True:
-            try:
-                log_file = open(self.__log_file_path__, "a", encoding="utf-16")
-                log_file.write(f'{log_write}')
-                log_file.close()
-            except:
-                print(sys.exc_info())
-
-        if str(log_text)[0:5].lower() == 'error':
-            raise Exception(f'{self.__error__}')
 
     def FindElements(self, Elements):
         """
