@@ -11,9 +11,7 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 from appium.options.android import UiAutomator2Options
 from .SupportModule import module
 
-__platform__ = 'AOS'
-__script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
-__time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
+#appium --log error --port 4723 --allow-insecure=adb_shell
 
 class AOS(module):
     def __init__(self, clientinfo):
