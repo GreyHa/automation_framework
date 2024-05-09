@@ -1,8 +1,11 @@
 # automation_framework
 # selenium, appium 기반으로 작성
-pip install Appium-Python-Client
 
-pip install selenium
+
+selenium=4.20.0
+Appium-Python-Client=4.0.0
+pip install -U selenium
+pip install Appium-Python-Client
 
 # web 모듈은 현재 크롬을 고정으로 사용
 https://chromedriver.chromium.org/downloads
