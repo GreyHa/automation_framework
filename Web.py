@@ -76,7 +76,7 @@ class Web(module):
             
         if self.__driver_ip__ != None:
             chrome_options.add_experimental_option("debuggerAddress", f"{self.__driver_ip__}:{self.__driver_port__}")
-            chrome_options.set_capability('loggingPrefs',{"browser": "ALL", 'performance': 'ALL'})
+            #chrome_options.set_capability('loggingPrefs',{"browser": "ALL", 'performance': 'ALL'})
         
         service = Service(executable_path=self.__driver_path__)
         self.driver = webdriver.Chrome(service=service, options=chrome_options)# service_args=["--verbose"] goog:loggingPrefs "--log-path=/qc1.txt"
