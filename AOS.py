@@ -761,8 +761,9 @@ class AOS(module):
         return result
 
     def adb_get_locale(self):
-        return self.adb_shell(command='getprop', args=['persist.sys.locale'])
-
+        self.driver_locale = self.adb_shell(command='getprop', args=['persist.sys.locale'])
+        return self.driver_locale
+    
     def adb_app_clear(self, app_id):
         self.adb_shell(command='pm clear',args=app_id)
 
