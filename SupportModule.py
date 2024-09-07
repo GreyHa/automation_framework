@@ -67,7 +67,7 @@ class module:
             if log_type == 3:
                 self.func_log_list = []
         
-        self.log(text, write_log=self.__class_log__)
+        self.log(text, log_type=log_type, write_log=self.__class_log__)
         return log_type
 
     def compare_log(self, target1, target2, compare_type:str='==', pass_type=0, fail_type=-1, log_text:str=''):
@@ -89,7 +89,7 @@ class module:
         else:
             text = log_text2
 
-        self.func_log(log_type, text)
+        self.func_log(log_text=text, log_type=log_type)
 
         return log_type
 
@@ -117,14 +117,13 @@ class module:
         elif return_type.lower() == 'text':
             return time.strftime(f'%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
-    def path_create(self, path):
-        if path:
-            dirpath = os.path.dirname(path)
-            if not(os.path.isdir(dirpath)):
+    def path_create(self, dir_path):
+        if dir_path:
+            if not os.path.exists(dir_path):
                 try:
-                    os.makedirs(os.path.join(dirpath))
+                    os.makedirs(os.path.join(dir_path))
                 except:
-                    print(sys.exc_info())
+                    print(f'{traceback.format_exc()}\n"{dir_path}"')
 
     def log(self, log_text, log_type=0, write_log:bool=True):
         if self.__log_collection__ == True:
@@ -150,7 +149,7 @@ class module:
             except:
                 print(sys.exc_info())
 
-        if str(log_text)[0:5].lower() == 'error':
+        if log_type == -1:
             raise Exception(f'{self.__error__}')
 
     def get_hash(self, file_path, func_type='md5'):

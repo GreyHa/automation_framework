@@ -69,7 +69,7 @@ class Web(module):
         self.all_log_list = []
         self.func_log_list = []
 
-        self.path_create(self.__log_file_path__)
+        self.path_create(os.path.isdir(self.__log_file_path__))
         self.path_create(self.__screenshot_path__)
 
         chrome_options:webdriver.ChromeOptions = self.dict_value(self.__client_info__, key='chrome_options', not_find_data=webdriver.ChromeOptions(), not_find_error=False)
@@ -242,12 +242,12 @@ class Web(module):
             if 'Target' in TargetElement:
                 ElementTarget = TargetElement['Target']
             else:
-                self.log(f'Error : FindElements > Element Target > {TargetElement}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Target > {TargetElement}', log_type=-1,  write_log=self.__class_log__)
 
             try:
                 FindResult = self.driver.find_elements(ElementType, ElementTarget)
             except:
-                self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]\n{sys.exc_info()}', log_type=-1,  write_log=self.__class_log__)
             
             if len(FindResult) == 0:
                 self.log(f'FindElements > Not Find > {TargetElement}', write_log=self.__class_log__)
@@ -256,7 +256,7 @@ class Web(module):
             self.ElementHandle = FindResult
             return self
         else:
-            self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]', write_log=self.__class_log__)
+            self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]', log_type=-1,  write_log=self.__class_log__)
 
     def WaitElement(self, Elements=None, Index=None, none_element:bool=False, none_error:bool=False, retry_count:int=-1):
         """
@@ -297,7 +297,7 @@ class Web(module):
                     self.log(f' > Hide', write_log=self.__class_log__)
                     return self
         if none_error == False:
-            self.log(f'Error : WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+            self.log(f'Error : WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', log_type=-1, write_log=self.__class_log__)
         else:
             self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
             return self
@@ -348,7 +348,7 @@ class Web(module):
             if not_find_error == True:
                 self.log(f'ElementValueList : {ElementValueList}', write_log=self.__class_log__)
                 self.log(f'ElementValue : "{ElementValue}"', write_log=self.__class_log__)
-                self.log(f'Error : FindValues > not find value', write_log=self.__class_log__)
+                self.log(f'Error : FindValues > not find value', log_type=-1,  write_log=self.__class_log__)
             else:
                 self.ElementIndex = None
         
@@ -377,7 +377,7 @@ class Web(module):
             except:
                 self.ElementDisplay = False
                 self.log(f'DisplayElement Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : DisplayElement > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : DisplayElement > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def Click(self, Elements=None, Index=None, auto_scroll:bool=True, offset=(0,0), retry_count:int=-1):
         """
@@ -414,7 +414,7 @@ class Web(module):
                     except selenium_exception.ElementClickInterceptedException:
                             ElementHandle.send_keys(Keys.ENTER)
                     except:
-                            self.log(f'Error > {sys.exc_info()}', write_log=self.__class_log__)
+                            self.log(f'Error > {sys.exc_info()}', log_type=-1,  write_log=self.__class_log__)
 
                     self.log(f'Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
                 else:
@@ -424,7 +424,7 @@ class Web(module):
                 return self
             except:
                 self.log(f'Click Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : Click > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def Select(self, Elements=None, Value=None, Index=None, retry_count:int=-1):
         """
@@ -445,7 +445,7 @@ class Web(module):
                 return self
             except:
                 self.log(f'Select Error > {TargetElement}[{ElementIndex}][{ElementValue}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Select > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : Select > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def MouseOver(self, Elements=None, Index=None, auto_scroll:bool=True, retry_count:int=-1):
         """
@@ -470,7 +470,7 @@ class Web(module):
                 return self
             except:
                 self.log(f'MouseOver Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : MouseOver > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : MouseOver > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def Send(self, Elements=None, Value=None, Index=None, clear:bool=True, enter:bool=False, retry_count:int=-1):
         """
@@ -521,7 +521,7 @@ class Web(module):
                 return self
             except:
                 self.log(f'Send Error > {TargetElement}[{ElementIndex}] > "{ElementValue}"\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
+        self.log(f'Error : Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', log_type=-1,  write_log=self.__class_log__)
 
     def Scrolle(self, Elements=None, Index=-1, retry_count:int=-1):
         """
@@ -544,7 +544,7 @@ class Web(module):
             except:
                 self.log(f'Scrolle Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
                 time.sleep(self.__after__)
-        self.log(f'Error : Scrolle > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : Scrolle > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def DragAndDrop(self, TargetElements, TargetIndex=None, retry_count:int=-1):
         """
@@ -587,7 +587,7 @@ class Web(module):
                     return self
                 except:
                     self.log(f'DragAndDrop error > {SoureceElement}[{SoureceIndex}] > {TargetElement}[{TargetIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : DragAndDrop > {SoureceElement}[{SoureceIndex}] > {TargetElement}[{TargetIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : DragAndDrop > {SoureceElement}[{SoureceIndex}] > {TargetElement}[{TargetIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def GetAttribute(self, Elements=None,
             attribute_list=['text','textContent','class','id','style','link','href','role'], retry_count:int=-1):

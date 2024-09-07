@@ -82,9 +82,9 @@ class AOS(module):
         self.ElementValueType = None
         self.ElementValueList = []
         self.ElementAttribute = []
-
-        self.path_create(os.path.dirname(self.__log_file_path__))
-        self.path_create(os.path.dirname(self.__screenshot_path__))
+        
+        self.path_create(os.path.isdir(self.__log_file_path__))
+        self.path_create(self.__screenshot_path__)
 
 
     def __call__(self,Elements=None,Index=None,Value=None,ValueType=None):
@@ -208,12 +208,12 @@ class AOS(module):
             if 'Target' in TargetElement:
                 ElementTarget = TargetElement['Target']
             else:
-                self.log(f'Error : FindElements > Element Target > {TargetElement}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Target > {TargetElement}', log_type=-1, write_log=self.__class_log__)
 
             try:
                 Result = self.driver.find_elements(ElementType, ElementTarget)
             except:
-                self.log(f'Error : FindElements > Element Type : {ElementType} {TargetElement} [{str(type(TargetElement))}]\n{sys.exc_info()}', write_log=self.__class_log__)
+                self.log(f'Error : FindElements > Element Type : {ElementType} {TargetElement} [{str(type(TargetElement))}]\n{sys.exc_info()}', log_type=-1, write_log=self.__class_log__)
 
             if len(Result) == 0:
                 self.log(f'FindElements > Not Find >{TargetElement}', write_log=self.__class_log__)
@@ -221,7 +221,7 @@ class AOS(module):
             self.ElementHandle = Result
             return self
         else:
-            self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]', write_log=self.__class_log__)
+            self.log(f'Error : FindElements > Element Type : {TargetElement} [{str(type(TargetElement))}]', log_type=-1,  write_log=self.__class_log__)
 
     def FindValues(self, Elements=None, Value=None, ValueType=None, not_find_error=False, strip_value=False, retry_count:int=-1):
         """
@@ -275,7 +275,7 @@ class AOS(module):
             if not_find_error == True:
                 self.log(f'ElementValueList : {ElementValueList}', write_log=self.__class_log__)
                 self.log(f'ElementValue : "{ElementValue}"', write_log=self.__class_log__)
-                self.log(f'Error : FindValues > not find value', write_log=self.__class_log__)
+                self.log(f'Error : FindValues > not find value', log_type=-1,  write_log=self.__class_log__)
             else:
                 self.ElementIndex = None
         
@@ -339,7 +339,7 @@ class AOS(module):
                     return self
 
         if none_error == False:
-            self.log(f'Error : WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+            self.log(f'Error : WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
         else:
             self.log(f'WaitElement [none_element:{none_element}] > {TargetElement}[{ElementIndex}] > Pass', write_log=self.__class_log__)
             return self
@@ -384,7 +384,7 @@ class AOS(module):
                 return self
             except:
                 self.log(f'Click Error > {TargetElement}[{ElementIndex}]\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Click > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : Click > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def Send(self, Elements=None, Value=None, Index=None, clear:bool=True, enter:bool=False, hide_keyboard=True, retry_count:int=-1):
         """
@@ -428,7 +428,7 @@ class AOS(module):
                 return self
             except:
                 self.log(f'Send Error > {TargetElement}[{ElementIndex}] > "{ElementValue}"\n{sys.exc_info()}', write_log=self.__class_log__)
-        self.log(f'Error : Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', write_log=self.__class_log__)
+        self.log(f'Error : Send > {TargetElement}[{ElementIndex}] > "{ElementValue}"', log_type=-1,  write_log=self.__class_log__)
 
     def GetAttribute(self, Elements=None, attribute_list=[
             'text','displayed','enabled','checked','selected','package',
@@ -483,8 +483,29 @@ class AOS(module):
         self.log(f'GetAttribute > {TargetElement} > {ElementAttribute}', write_log=self.__class_log__)
         self.ElementAttribute = ElementAttribute
         return self
+    
+    def __element_center__(self, ElementHandle, offset=(0,0)):
+        bounds = ElementHandle.get_attribute('bounds')
+        bounds_split = bounds[:-1].replace('[','').split(']')
+        bounds_start = bounds_split[0].split(',')
+        bounds_end = bounds_split[1].split(',')
 
-    def Slide(self, TargetElements=None, TargetIndex=None, offset=(0,0), retry_count:int=-1):
+        center_x = int((int(bounds_start[0]) + int(bounds_end[0]))/2)
+        center_y = int((int(bounds_start[1]) + int(bounds_end[1]))/2)
+
+        if offset[0] != None:
+            point_x = center_x + offset[0]
+        else:
+            point_x = center_x
+
+        if offset[1] != None:
+            point_y = center_y + offset[1]
+        else:
+            point_y = center_y
+
+        return (point_x,point_y)
+
+    def Slide(self, TargetElements=None, TargetIndex=None, sourece_offset=(0,0), target_offset=(0,0), befoer_duration=1, affter_duration=0, retry_count:int=-1):
         """
             ElementHandle의 ElementIndex번째 Element를
             TargetElements의 TargetIndex번째 위치로 슬라이드
@@ -492,8 +513,6 @@ class AOS(module):
             
             만약 TargetElements 값을 입력 하지 않으면 ElementHandle 위치 기점으로 offset 위치 까지 슬라이드
         """
-        offset_x, offset_y = offset
-
         SoureceElement = self.ElementHandle
         if self.ElementIndex:
             Soureceindex = self.ElementIndex
@@ -514,27 +533,35 @@ class AOS(module):
         #self.screenshot(f'Scrolle')
         if len(self.ElementHandle) > 0:
             SoureceElementHandle = self.ElementHandle[Soureceindex]
+            source_point = self.__element_center__(SoureceElementHandle, offset=sourece_offset)
+
             self.WaitElement(TargetElement,Index=Targetindex, retry_count=retry_count)
             if len(self.ElementHandle) > 0:
                 TargetElementHandle = self.ElementHandle[Targetindex]
+                target_point = self.__element_center__(TargetElementHandle, offset=target_offset)
                 try:
-
-                    action = self.touchaction()
-                    action.press(SoureceElementHandle)
-                    action.wait(500)
-                    action.move_to(TargetElementHandle,x=offset_x,y=offset_y)
-                    action.release()
+                    action = self.action()
+                    action.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+                    action.w3c_actions.pointer_action.move_to_location(x=source_point[0], y=source_point[1])
+                    action.w3c_actions.pointer_action.pointer_down()
+                    action.w3c_actions.pointer_action.pause(duration=befoer_duration)
+                    action.w3c_actions.pointer_action.move_to_location(x=target_point[0], y=target_point[1])
+                    action.w3c_actions.pointer_action.pause(duration=affter_duration)
+                    action.w3c_actions.pointer_action.pointer_up()
+                    action.w3c_actions.pointer_action.release()
                     action.perform()
-                    self.log(f'Slide > {TargetElement}[{Targetindex}] x:{offset_x},y:{offset_y}', write_log=self.__class_log__)
+
+                    self.log(f'Slide > {SoureceElement}[{Soureceindex}][{sourece_offset}] > {TargetElement}[{Targetindex}][{target_offset}]', write_log=self.__class_log__)
+                    
                     time.sleep(self.__after__)
                     #self.screenshot(f'Scrolle')
                     return self
                 except:
                     self.log(f'Slide Error > {TargetElement}[{Targetindex}]\n{sys.exc_info()}', write_log=self.__class_log__)
                     time.sleep(self.__after__)
-        #self.screenshot(f'Scrolle_Error')
-        self.log(f'Error : Slide > {TargetElement}[{Targetindex}]', write_log=self.__class_log__)
 
+        self.log(f'Error : Slide > {TargetElement}[{Targetindex}]', log_type=-1,  write_log=self.__class_log__)
+    
     def LongPress(self, Elements=None, Index=None, offset=(0,0), duration=1, retry_count:int=-1):
         """
             찾은 Elements에서 Index 번째의 Element에 롱프레스
@@ -543,42 +570,22 @@ class AOS(module):
         self.__ElementHandle__(Elements)
         ElementIndex = self.ElementIndex
         TargetElement = self.ElementHandle
-        offset_x, offset_y = offset
         
         self.WaitElement(TargetElement,Index=ElementIndex, retry_count=retry_count)
         if len(self.ElementHandle) > 0:
             ElementHandle = self.ElementHandle[ElementIndex]
-            if offset_x != 0 or offset_y != 0:
-                bounds = ElementHandle.get_attribute('bounds')
-                bounds_split = bounds[:-1].replace('[','').split(']')
-                bounds_start = bounds_split[0].split(',')
-                bounds_end = bounds_split[1].split(',')
-
-                center_x = int((int(bounds_start[0]) + int(bounds_end[0]))/2)
-                center_y = int((int(bounds_start[1]) + int(bounds_end[1]))/2)
-
-                if offset_x != None:
-                    point_x = center_x + offset_x
-                else:
-                    point_x = center_x
-
-                if offset_y != None:
-                    point_y = center_y + offset_y
-                else:
-                    point_y = center_y
-
-                action = self.touchaction()
-                action.long_press(x=point_x, y=point_y, duration=duration*1000)
-                action.release()
-                action.perform()
-            else:
-                action = self.touchaction()
-                action.long_press(el=ElementHandle, duration=duration*1000)
-                action.release()
-                action.perform()
+            element_point = self.__element_center__(ElementHandle, offset=offset)
+            action = self.action()
+            action.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+            action.w3c_actions.pointer_action.move_to_location(x=element_point[0], y=element_point[1])
+            action.w3c_actions.pointer_action.pointer_down()
+            action.w3c_actions.pointer_action.pause(duration=duration)
+            action.w3c_actions.pointer_action.pointer_up()
+            action.w3c_actions.pointer_action.release()
+            action.perform()
             self.log(f'LongPress > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
             return self
-        self.log(f'Error : LongPress > {TargetElement}[{ElementIndex}]', write_log=self.__class_log__)
+        self.log(f'Error : LongPress > {TargetElement}[{ElementIndex}]', log_type=-1,  write_log=self.__class_log__)
 
     def screenshot(self,file_name=None, screenshot_path=None):
 
@@ -641,14 +648,7 @@ class AOS(module):
         recode = self.driver.stop_recording_screen()
         with open(f'{self.__screenshot_path__}/{self.now_time("file")}_{file_name}.mp4', "wb") as recode_file:
             recode_file.write(base64.b64decode(recode))
-
-
-    def touchaction(self):
-        #https://github.com/appium/python-client/blob/7dbf4f2f7ce43f60eded19fa247bb2177b65bafd/README.md#multiactiontouchaction-to-w3c-actions
-        action = self.action()
-        action.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
-        return action.w3c_actions.pointer_action
-    
+        
     def action(self):
         return ActionChains(self.driver)
 
@@ -661,7 +661,7 @@ class AOS(module):
             except:
                 self.log(f'keycode Error > keycode > code {code}\n{sys.exc_info()}', write_log=self.__class_log__)
                 time.sleep(self.__after__)
-        self.log(f'Error : keycode > code {code}', write_log=self.__class_log__)
+        self.log(f'Error : keycode > code {code}', log_type=-1,  write_log=self.__class_log__)
 
     def key_send(self, send_keys:list, wait=1):
         action = self.action()
@@ -684,71 +684,6 @@ class AOS(module):
 
     def key_back(self):
         self.keycode(4)
-
-    def touch_point(self, point=(0,0), wait=0):        
-        action = self.touchaction()
-        point_x, point_y = point
-        self.func_log(f'{point}')
-        action.pointer_down(x=point_x,y=point_y)
-        action.pause(wait*1000)
-        action.pointer_up(x=point_x,y=point_y)
-        action.release()
-        time.sleep(self.__after__)
-
-    def slide_point(self, point=(0,0), point2=(0,0), wait=1):
-        action = self.touchaction()
-        point_x, point_y = point
-        point2_x, point2_y = point2
-        self.func_log(f'{point} > {point2}')
-        action.pointer_down(x=point_x,y=point_y)
-        action.pause(wait*1000)
-        action.move_to(x=point2_x,y=point2_y)
-        action.pointer_up(x=point_x,y=point_y)
-        action.release()
-        time.sleep(self.__after__)
-
-    def slide_down(self,level=3, wait=1):
-        point_x = int(self.driver_location['width']/2)
-        point_y = int(self.driver_location['height']/2-self.driver_location['height']/8*level)
-        move_y = int(self.driver_location['height']/2+self.driver_location['height']/8*level)
-        
-        point = (point_x, point_y)
-        point2 = (point_x, move_y)
-
-        self.slide_point(point=point, point2=point2, wait=wait)
-
-    def slide_up(self,level=3,wait=1):
-        point_x = int(self.driver_location['width']/2)
-
-        point_y = int(self.driver_location['height']/2+self.driver_location['height']/8*level)
-        move_y = int(self.driver_location['height']/2-self.driver_location['height']/8*level)
-
-        point = (point_x, point_y)
-        point2 = (point_x, move_y)
-
-        self.slide_point(point=point, point2=point2, wait=wait)
-
-    def slide_left(self,level=3, wait=1):
-        point_x = int(self.driver_location['width']/2+self.driver_location['width']/8*level)
-        move_x = int(self.driver_location['width']/2-self.driver_location['width']/8*level)
-        point_y = int(self.driver_location['height']/2)
-        point = (point_x, point_y)
-        point2 = (move_x, point_y)
-
-        self.slide_point(point=point, point2=point2, wait=wait)
-
-    def slide_right(self,level=3,wait=1):
-        point_x = int(self.driver_location['width']/2-self.driver_location['width']/8*level)
-        move_x = int(self.driver_location['width']/2+self.driver_location['width']/8*level)
-        point_y = int(self.driver_location['height']/2)
-
-        point = (point_x, point_y)
-        point2 = (move_x, point_y)
-        self.slide_point(point=point, point2=point2, wait=wait)
-    
-    def slide_app_close(self, level=2):
-        self.key_app_switch()
-        self.slide_up(level=level)
 
     def app_start(self,app_id):
         self.driver.activate_app(app_id=app_id)
@@ -813,3 +748,82 @@ class AOS(module):
             self.touch_point((point_x,point_y), wait=wait)
         else:
             self.func_log(-1,f'not find img', write_log=self.__class_log__)
+
+
+
+
+
+
+
+    '''
+    def pointer_action(self):
+        #https://github.com/appium/python-client/blob/7dbf4f2f7ce43f60eded19fa247bb2177b65bafd/README.md#multiactiontouchaction-to-w3c-actions
+        action = self.action()
+        action.w3c_actions = ActionBuilder(self.driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
+        return action.w3c_actions.pointer_action
+    
+    def touch_point(self, point=(0,0), wait=0):        
+        action = self.touchaction()
+        point_x, point_y = point
+        self.func_log(f'{point}')
+        action.pointer_down(x=point_x,y=point_y)
+        action.pause(wait*1000)
+        action.pointer_up(x=point_x,y=point_y)
+        action.release()
+        time.sleep(self.__after__)
+
+    def slide_point(self, point=(0,0), point2=(0,0), wait=1):
+        action = self.touchaction()
+        point_x, point_y = point
+        point2_x, point2_y = point2
+        self.func_log(f'{point} > {point2}')
+        action.pointer_down(tilt_x=point_x,tilt_y=point_y)
+        action.pause(wait*1000)
+        action.move_to(tilt_x=point2_x,tilt_y=point2_y)
+        action.pointer_up(tilt_x=point_x,tilt_y=point_y)
+        action.release()
+        time.sleep(self.__after__)
+
+    def slide_down(self,level=3, wait=1):
+        point_x = int(self.driver_location['width']/2)
+        point_y = int(self.driver_location['height']/2-self.driver_location['height']/8*level)
+        move_y = int(self.driver_location['height']/2+self.driver_location['height']/8*level)
+        
+        point = (point_x, point_y)
+        point2 = (point_x, move_y)
+
+        self.slide_point(point=point, point2=point2, wait=wait)
+
+    def slide_up(self,level=3,wait=1):
+        point_x = int(self.driver_location['width']/2)
+
+        point_y = int(self.driver_location['height']/2+self.driver_location['height']/8*level)
+        move_y = int(self.driver_location['height']/2-self.driver_location['height']/8*level)
+
+        point = (point_x, point_y)
+        point2 = (point_x, move_y)
+
+        self.slide_point(point=point, point2=point2, wait=wait)
+
+    def slide_left(self,level=3, wait=1):
+        point_x = int(self.driver_location['width']/2+self.driver_location['width']/8*level)
+        move_x = int(self.driver_location['width']/2-self.driver_location['width']/8*level)
+        point_y = int(self.driver_location['height']/2)
+        point = (point_x, point_y)
+        point2 = (move_x, point_y)
+
+        self.slide_point(point=point, point2=point2, wait=wait)
+
+    def slide_right(self,level=3,wait=1):
+        point_x = int(self.driver_location['width']/2-self.driver_location['width']/8*level)
+        move_x = int(self.driver_location['width']/2+self.driver_location['width']/8*level)
+        point_y = int(self.driver_location['height']/2)
+
+        point = (point_x, point_y)
+        point2 = (move_x, point_y)
+        self.slide_point(point=point, point2=point2, wait=wait)
+    
+    def slide_app_close(self, level=2):
+        self.key_app_switch()
+        self.slide_up(level=level)
+    '''
