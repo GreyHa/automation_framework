@@ -756,12 +756,12 @@ class AOS(module):
     def adb_shell(self, command, args):
         #args = {'command':'pm clear','args':'io.swit'}
         args = {'command':command,'args': args}
-        result = self.driver.execute_script('mobile:shell',args).strip()
+        result = self.driver.execute_script('mobile:shell',args)
         time.sleep(self.__after__)
         return result
 
     def adb_get_locale(self):
-        self.driver_locale = self.adb_shell(command='getprop', args=['persist.sys.locale'])
+        self.driver_locale = self.adb_shell(command='getprop', args=['persist.sys.locale']).strip()
         return self.driver_locale
     
     def adb_app_clear(self, app_id):
