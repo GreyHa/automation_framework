@@ -69,7 +69,7 @@ class Web(module):
         self.all_log_list = []
         self.func_log_list = []
 
-        self.path_create(os.path.isdir(self.__log_file_path__))
+        self.path_create(os.path.dirname(self.__log_file_path__))
         self.path_create(self.__screenshot_path__)
 
         chrome_options:webdriver.ChromeOptions = self.dict_value(self.__client_info__, key='chrome_options', not_find_data=webdriver.ChromeOptions(), not_find_error=False)

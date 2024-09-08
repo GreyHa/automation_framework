@@ -83,7 +83,7 @@ class AOS(module):
         self.ElementValueList = []
         self.ElementAttribute = []
         
-        self.path_create(os.path.isdir(self.__log_file_path__))
+        self.path_create(os.path.dirname(self.__log_file_path__))
         self.path_create(self.__screenshot_path__)
 
 
