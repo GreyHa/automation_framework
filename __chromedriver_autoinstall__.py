@@ -10,7 +10,10 @@ import shutil
 #mac-x64
 #linux64
 
-def chrome_driver_install_path():
+def chrome_driver_install_path(base_path=''):
+    if not base_path:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+
     run_os = sys.platform
     if run_os == 'darwin':
         platform = 'mac-x64'
@@ -84,7 +87,6 @@ def chrome_driver_install_path():
 
     url = 'https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json'
 
-    base_path = os.path.dirname(os.path.abspath(__file__))
     driver_folder = f'{base_path}/driver'
     path_create(driver_folder)
 
@@ -101,13 +103,6 @@ def chrome_driver_install_path():
 
             elif chk_ver_split(v1=chrome_ver, v2=driver_ver, count=3) == True:
                 count3.append(driver_info)
-
-
-    #print(count4)
-    #print(count3)
-    #print(chrome_ver)
-
-
     
     if count4:
         chrome_path = download_url(count4[0])
@@ -117,11 +112,8 @@ def chrome_driver_install_path():
         else:
             return chromedriver_autoinstaller.install()
 
-    #print(chrome_path)
-
     driver_folder_ver = f'{driver_folder}/{chrome_ver}'
     path_create(driver_folder_ver)
-
 
     if platform == 'win64':
         result = f'{driver_folder_ver}/chromedriver-win64/chromedriver.exe'
@@ -133,13 +125,13 @@ def chrome_driver_install_path():
     if not os.path.exists(result):
         download_path = download(chrome_path,driver_folder_ver)
         unzip(zip_path=download_path, unzip_path=driver_folder_ver)
-    #print(result)
+        os.unlink(download_path)
 
-    if platform == 'mac-x64':
-        run_path = ['chmod',f'+x',f'{result}']
+    if platform in ['mac-x64']:
+        run_path = ['chmod', '+x', f'"{result}"']
         subprocess.run(run_path)
     
     return result
 
-
-#chrome_driver_install_path()
+if __name__ == "__main__":
+    chrome_driver_install_path()
