@@ -8,131 +8,12 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.service import Service
 import selenium.common.exceptions as selenium_exception
-from supportmodule.common import module_class as common_module
+from ..supportmodule.common import module_class as common_module
 
 # chrome.exe --remote-debugging-port=9223 --user-data-dir=c:\test
 # /Applications//Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9223 --user-data-dir="~/Chrome/Chrome-user01"
 
 class module_class(common_module):
-    def __init__(self, clientinfo):
-        '''
-            clientinfo =
-            {
-                'executable_path' : chromedriver path,
-                'ip': None or ip,
-                'port' : None or port,
-                'location' : None or dict
-                {
-                    'width': window size or None,
-                    'height': window size or None,
-                    'x': window position or None,
-                    'y':window position or None
-                },
-                'chrome_options' : chrome_options,
-                'desired_capabilities' : desired_capabilities,
-                'retry' : if fail retry count,
-                'after' : action delay second,
-                'element_highlight' = bool,
-                'screenshot_path' = save folder path,
-                'log_file_path' = log file full path,
-                'class_name' = class name > log > "{time} {class_name} {log_text}"
-                'element_type' = css selector, xpath etc...
-                'class_log' = True, class in func log write
-            }
-        '''
-        
-        self.__platform__ = 'Web'
-        self.__script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
-        self.__start_time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
-
-        self.__client_info__:dict = clientinfo
-        self.__driver_path__:str = self.__client_info__['executable_path']
-
-        self.__driver_ip__ = self.dict_value(self.__client_info__, key='ip', not_find_data=None)
-        self.__driver_port__ = self.dict_value(self.__client_info__, key='port', not_find_data=None)
-        self.__driver_location__ = self.dict_value(self.__client_info__, key='location', not_find_data=None)
-        self.__screenshot_path__ = self.dict_value(self.__client_info__, key='screenshot_path', not_find_data=f'{self.__script_path__}/screenshot/{self.__start_time__}')
-        self.__log_file_path__ = self.dict_value(self.__client_info__, key='log_file_path', not_find_data=f'{self.__script_path__}/log/{self.__start_time__}.txt')
-        
-        self.__class_name__ = self.dict_value(self.__client_info__, key='class_name', not_find_data=self.__platform__)
-        self.__element_type__ = self.dict_value(self.__client_info__, key='element_type', not_find_data='css selector')
-        self.__class_log__ = self.dict_value(self.__client_info__, key='class_log', not_find_data=True)
-        self.__print_log__ = self.dict_value(self.__client_info__, key='print_log', not_find_data=True)        
-        self.__log_collection__ = self.dict_value(self.__client_info__, key='log collection', not_find_data=True)
-
-        self.__retry__ = self.dict_value(self.__client_info__, key='retry', not_find_data=5)
-        self.__after__ = self.dict_value(self.__client_info__, key='after', not_find_data=1)
-
-        self.__error__ = ''
-        self.all_log_list = []
-        self.func_log_list = []
-
-        self.path_create(os.path.dirname(self.__log_file_path__))
-        self.path_create(self.__screenshot_path__)
-
-        chrome_options:webdriver.ChromeOptions = self.dict_value(self.__client_info__, key='chrome_options', not_find_data=webdriver.ChromeOptions(), not_find_error=False)
-            
-        if self.__driver_ip__ != None:
-            chrome_options.add_experimental_option("debuggerAddress", f"{self.__driver_ip__}:{self.__driver_port__}")
-            #chrome_options.set_capability('loggingPrefs',{"browser": "ALL", 'performance': 'ALL'})
-        
-        service = Service(executable_path=self.__driver_path__)
-        self.driver = webdriver.Chrome(service=service, options=chrome_options)# service_args=["--verbose"] goog:loggingPrefs "--log-path=/qc1.txt"
-        self.__debuggerAddress__ = self.driver.capabilities['goog:chromeOptions']['debuggerAddress'].split(':')
-        self.__debugger_ip__ = self.__debuggerAddress__[0]
-        self.__debugger_port__ = self.__debuggerAddress__[-1]
-        self.Change_location(location=self.__driver_location__)
-               
-        self.ElementHandle = []
-        self.ElementIndex = None
-        self.ElementValue = None
-        self.ElementValueType = None
-        self.ElementValueList = []
-        self.ElementAttribute = []
-        self.ElementDisplay = False
-
-
-    def __call__(self,Elements,Index=None,Value=None,ValueType=None):
-        #input, output
-        self.ElementHandle = Elements
-        self.ElementIndex = None
-        self.ElementValue = None
-        self.ElementValueType = None
-
-        #only output
-        self.ElementDisplay = False
-        self.ElementValueList = []
-        self.ElementAttribute = []           
-
-        if Index == None:
-            if 'dict' in str(type(Elements)):
-                try:
-                    self.ElementIndex = Elements['Index']
-                except:
-                    self.ElementIndex = None
-        else:
-            self.__ElementIndex__(Elements,Index)
-        
-        if Value == None:
-            if 'dict' in str(type(Elements)):
-                try:
-                    self.ElementValue = Elements['Value']
-                except:
-                    self.ElementValue = None
-        else:
-            self.__ElementValue__(Elements,Value)
-
-        if ValueType == None:
-            if 'dict' in str(type(Elements)):
-                try:
-                    self.ElementValueType = Elements['ValueType']
-                except:
-                    self.ElementValueType = None
-        else:
-            self.__ElementValueType__(Elements,ValueType)
-        
-        return self
-
     def __ElementHandle__(self, Elements):
         if Elements != None:
             self.ElementHandle = Elements
@@ -182,6 +63,26 @@ class module_class(common_module):
                     self.ElementValueType = 'textContent'
         else:
             self.ElementValueType = ValueType
+
+    def Connection(self, executable_path, debuggerAddress='', chrome_options:webdriver.ChromeOptions=None):
+        if not chrome_options:
+            chrome_options = webdriver.ChromeOptions()
+            
+        if debuggerAddress:
+            chrome_options.add_experimental_option("debuggerAddress", debuggerAddress)
+            #chrome_options.set_capability('loggingPrefs',{"browser": "ALL", 'performance': 'ALL'})
+        
+        service = Service(executable_path=executable_path)
+        self.driver = webdriver.Chrome(service=service, options=chrome_options)# service_args=["--verbose"] goog:loggingPrefs "--log-path=/qc1.txt"
+        self.__debuggerAddress__ = self.driver.capabilities['goog:chromeOptions']['debuggerAddress'].split(':')
+        self.__debugger_ip__ = self.__debuggerAddress__[0]
+        self.__debugger_port__ = self.__debuggerAddress__[-1]
+
+    def Change_url(self, url):
+        self.driver.get(url)
+
+    def Change_tab(self, handle_index=-1):
+        self.driver.switch_to.window(self.driver.window_handles[handle_index])
 
     def Change_location(self, location):
         if location:

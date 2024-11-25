@@ -8,127 +8,12 @@ from selenium.webdriver.common.actions import interaction
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 from appium.options.android import UiAutomator2Options
-from supportmodule.common import module_class as common_module
+from ..supportmodule.common import module_class as common_module
 
 #https://selenium-python.readthedocs.io/api.html#selenium.webdriver.common.touch_actions.TouchActions.scroll
 #appium --log error --port 4723 --allow-insecure=adb_shell
 
-
 class module_class(common_module):
-    def __init__(self, clientinfo):
-        '''
-            clientinfo = desired_capabilities
-            {
-                'device' : {
-                    *'automationName': 'UiAutomator2'
-                    *'platformName': 'Android'
-                    *'udid': udid,
-                    'newCommandTimeout' : timeout second
-                    'platformVersion': 11.0,
-                    'deviceName': 'Pixel_2_API_30'
-                    'enableMultiWindows': bool
-                }
-                'ip': appium ip,
-                'port' : appium port
-                'retry' : if fail retry count,
-                'after' : action delay second
-                'screenshot_path' = save folder path,
-                'log_file_path' = log file full path,
-                'class_name' = class name > log > "{time} {class_name} {log_text}",
-                'element_type' = id, xpath etc...
-                'class_log' = True, class in func log write
-            }
-        '''
-        self.__platform__ = 'AOS'
-        self.__script_path__ = f'{os.path.dirname(os.path.abspath(__file__))}'
-        self.__start_time__ = time.strftime('%Y%m%d_%H%M%S',time.localtime(time.time()))
-
-        self.__client_info__:dict = clientinfo
-        self.__device__:dict = self.__client_info__['device']
-
-        self.__appium_ip__ = self.dict_value(self.__client_info__, key='ip', not_find_data='127.0.0.1')
-        self.__appium_port__ = self.dict_value(self.__client_info__, key='port', not_find_data='4723')
-
-        self.__screenshot_path__ = self.dict_value(self.__client_info__, key='screenshot_path', not_find_data=f'{self.__script_path__}/screenshot/{self.__start_time__}')
-        self.__log_file_path__ = self.dict_value(self.__client_info__, key='log_file_path', not_find_data=f'{self.__script_path__}/log/{self.__start_time__}.txt')
-        
-        self.__class_name__ = self.dict_value(self.__client_info__, key='class_name', not_find_data=self.__platform__)
-        self.__element_type__ = self.dict_value(self.__client_info__, key='element_type', not_find_data='id')
-        self.__class_log__ = self.dict_value(self.__client_info__, key='class_log', not_find_data=True)
-        self.__print_log__ = self.dict_value(self.__client_info__, key='print_log', not_find_data=True)        
-        self.__log_collection__ = self.dict_value(self.__client_info__, key='log collection', not_find_data=True)
-
-        self.__retry__ = self.dict_value(self.__client_info__, key='retry', not_find_data=5)
-        self.__after__ = self.dict_value(self.__client_info__, key='after', not_find_data=1)
-
-        RemotePath = self.dict_value(self.__client_info__, key='RemotePath', not_find_data='')
-        self.__appium_host__ = f'http://{self.__appium_ip__}:{self.__appium_port__}{RemotePath}'
-
-        self.__error__ = ''
-        self.all_log_list = []   
-        self.func_log_list = []
-        capabilities_options = UiAutomator2Options().load_capabilities(self.__device__)
-        self.driver = webdriver.Remote(command_executor=self.__appium_host__, options=capabilities_options)
-
-        self.driver_location = self.driver.get_window_size()
-        self.driver_capabilities = self.driver.capabilities
-        self.device_maker = self.driver_capabilities['deviceManufacturer']
-        self.device_model = self.driver_capabilities['deviceModel']
-        self.android_version = self.driver_capabilities['platformVersion']
-        self.driver_locale = ''
-
-        self.ElementHandle = []
-        self.ElementIndex = None
-        self.ElementValue = None
-        self.ElementValueType = None
-        self.ElementValueList = []
-        self.ElementAttribute = []
-        
-        self.path_create(os.path.dirname(self.__log_file_path__))
-        self.path_create(self.__screenshot_path__)
-
-
-    def __call__(self,Elements=None,Index=None,Value=None,ValueType=None):
-        #input, output
-        self.ElementHandle = Elements
-        self.ElementIndex = None
-        self.ElementValue = None
-        self.ElementValueType = None
-
-        #only output
-        self.ElementDisplay = False
-        self.ElementValueList = []
-        self.ElementAttribute = []
-
-        if Index == None:
-            if 'dict' in str(type(Elements)):
-                try:
-                    self.ElementIndex = Elements['Index']
-                except:
-                    self.ElementIndex = None
-        else:
-            self.__ElementIndex__(Elements,Index)
-        
-        if Value == None:
-            if 'dict' in str(type(Elements)):
-                try:
-                    self.ElementValue = Elements['Value']
-                except:
-                    self.ElementValue = None
-        else:
-            self.__ElementValue__(Elements,Value)
-
-        if ValueType == None:
-            if 'dict' in str(type(Elements)):
-                try:
-                    self.ElementValueType = Elements['ValueType']
-                except:
-                    self.ElementValueType = None
-        else:
-            self.__ElementValueType__(Elements,ValueType)
-        
-        return self          
-
     def __ElementHandle__(self, Elements):
         if Elements != None:
             self.ElementHandle = Elements
@@ -179,6 +64,26 @@ class module_class(common_module):
         else:
             self.ElementValueType = ValueType
 
+    def Connection(self, device:dict, appium_host:str):
+        '''
+            'device' : {
+                *'automationName': 'UiAutomator2'
+                *'platformName': 'Android'
+                *'udid': udid,
+                'newCommandTimeout' : timeout second
+                'platformVersion': 11.0,
+                'deviceName': 'Pixel_2_API_30'
+                'enableMultiWindows': bool
+            }
+        '''
+        
+        capabilities_options = UiAutomator2Options().load_capabilities(device)
+        self.driver = webdriver.Remote(command_executor=appium_host, options=capabilities_options)
+        self.driver_location = self.driver.get_window_size()
+        self.driver_capabilities = self.driver.capabilities
+        self.device_maker = self.driver_capabilities['deviceManufacturer']
+        self.device_model = self.driver_capabilities['deviceModel']
+        self.android_version = self.driver_capabilities['platformVersion']
 
     def FindElements(self, Elements):
         """
