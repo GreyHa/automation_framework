@@ -9,6 +9,8 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.service import Service
 import selenium.common.exceptions as selenium_exception
 from ..supportmodule.common import module_class as common_module
+from typing import Union
+from selenium.webdriver.remote.webelement import WebElement
 
 # chrome.exe --remote-debugging-port=9223 --user-data-dir=c:\test
 # /Applications//Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9223 --user-data-dir="~/Chrome/Chrome-user01"
@@ -83,6 +85,13 @@ class module_class(common_module):
 
     def Change_tab(self, handle_index=-1):
         self.driver.switch_to.window(self.driver.window_handles[handle_index])
+
+    def Change_frame(self, frame_reference: Union[str, int, WebElement]):
+        self.driver.switch_to.frame(frame_reference)
+
+    def Execute_script(self, script, *args):
+        self.driver.execute_script(script, *args)
+
 
     def Change_location(self, location):
         if location:
