@@ -7,6 +7,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.alert import Alert
 import selenium.common.exceptions as selenium_exception
 from ..supportmodule.common import module_class as common_module
 from typing import Union
@@ -91,7 +92,6 @@ class module_class(common_module):
 
     def Execute_script(self, script, *args):
         self.driver.execute_script(script, *args)
-
 
     def Change_location(self, location):
         if location:
@@ -546,3 +546,16 @@ class module_class(common_module):
 
     def action(self):
         return  ActionChains(self.driver)
+    
+    def alert(self):
+        return Alert(self.driver)
+    
+    def aert_text(self):
+        return self.alert().text
+    
+    def aert_accept(self):
+        self.alert().accept()
+
+    def aert_dismiss(self):
+        self.alert().dismiss()
+    
