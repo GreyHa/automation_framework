@@ -550,12 +550,12 @@ class module_class(common_module):
     def alert(self):
         return Alert(self.driver)
     
-    def aert_text(self):
+    def alert_text(self):
         return self.alert().text
     
-    def aert_accept(self):
+    def alert_accept(self):
         self.alert().accept()
 
-    def aert_dismiss(self):
+    def alert_dismiss(self):
         self.alert().dismiss()
     
